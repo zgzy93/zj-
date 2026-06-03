@@ -571,6 +571,10 @@ function saveData(){
     localStorage.setItem("cch",JSON.stringify(state.history));
   }catch(e){}
 }
+function clearHistory(){
+  state.history={};
+  localStorage.removeItem("cch");
+}
 function clearAllData(){
   state.wrongSet.clear();state.starredSet.clear();state.history={};
   localStorage.removeItem("ccw");localStorage.removeItem("ccs");localStorage.removeItem("cch");
@@ -813,7 +817,8 @@ function renderChSelect(){
   }
   h+=`</div><div class="action-row">`;
   h+=`<button class="action-btn pri" data-action="sw-starred">⭐ 收藏 (${state.starredSet.size})</button>`;
-  h+=`<button class="action-btn del" data-action="sw-clear">🗑 清空数据</button></div>`;
+  h+=`<button class="action-btn" data-action="sw-clear">📋 清空记录</button>`;
+  h+=`<button class="action-btn del" data-action="sw-reset">⚠️ 重置所有</button></div>`;
   ct.innerHTML=h;updateStatsAndNav();
 }
 
@@ -824,6 +829,7 @@ document.getElementById("mainContent").addEventListener("click",function(e){
   const act=a.dataset.action;
   if(act==="sw-starred"){state.mode="starred";state.currentIndex=0;state.answered=false;state.selectedOption=null;render();}
   if(act==="sw-clear")showClearConfirm();
+  if(act==="sw-reset")showResetConfirm();
 });
 
 // === 浏览页 ===
@@ -847,9 +853,15 @@ function renderBrowse(container){
 
 // === 弹窗 ===
 function showClearConfirm(){
-  document.getElementById("modalTitle").textContent="🗑 确认清空";
-  document.getElementById("modalText").textContent="确定要清空所有学习记录吗？（错题本、收藏、答题历史将全部删除，题库数据不受影响）";
-  document.getElementById("modalConfirmBtn").onclick=function(){clearAllData();closeModal();showToast("✅ 已清空所有学习数据");render();};
+  document.getElementById("modalTitle").textContent="🗑 清空答题记录";
+  document.getElementById("modalText").textContent="确定要清空答题记录吗？（仅清除已答记录，错题本和收藏题目不会受影响）";
+  document.getElementById("modalConfirmBtn").onclick=function(){clearHistory();closeModal();showToast("✅ 已清空答题记录");render();};
+  document.getElementById("modalOverlay").classList.add("show");
+}
+function showResetConfirm(){
+  document.getElementById("modalTitle").textContent="⚠️ 重置所有数据";
+  document.getElementById("modalText").textContent="确定要重置所有数据吗？（答题记录、错题本、收藏将全部删除，不可恢复）";
+  document.getElementById("modalConfirmBtn").onclick=function(){clearAllData();closeModal();showToast("✅ 已重置所有数据");render();};
   document.getElementById("modalOverlay").classList.add("show");
 }
 function closeModal(){document.getElementById("modalOverlay").classList.remove("show");}
