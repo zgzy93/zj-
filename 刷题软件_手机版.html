@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>计组刷题 · 手机版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--primary:#4f46e5;--primary-light:#818cf8;--primary-dark:#3730a3;--bg:#f0f2f5;--card:#fff;--text:#1f2937;--text-light:#6b7280;--border:#e5e7eb;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--shadow:0 1px 3px rgba(0,0,0,.08)}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);padding-bottom:70px;min-height:100vh;overflow-x:hidden}
+/* Top Bar */
+.top-bar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between}
+.top-bar .title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+.top-bar .title .icon{font-size:20px}
+.top-bar .stats{font-size:12px;color:var(--text-light);display:flex;gap:10px;align-items:center}
+.top-bar .stats span{white-space:nowrap}
+/* Content */
+.content{padding:12px 14px;max-width:600px;margin:0 auto}
+/* Stats Grid */
+.stats-row{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding:2px 0;-webkit-overflow-scrolling:touch}
+.stat-mini{flex-shrink:0;background:var(--card);border-radius:8px;padding:8px 14px;box-shadow:var(--shadow);text-align:center;min-width:72px}
+.stat-mini .num{font-size:20px;font-weight:700;color:var(--primary);line-height:1.2}
+.stat-mini .lbl{font-size:11px;color:var(--text-light)}
+/* Mode Selector */
+.mode-scroll{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding:2px 0;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.mode-scroll::-webkit-scrollbar{display:none}
+.mode-btn{flex-shrink:0;padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.mode-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* Progress */
+.progress-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:12px;overflow:hidden}
+.progress-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
+/* Question Card */
+.q-card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:18px 16px;margin-bottom:12px}
+.q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:4px}
+.q-number{font-size:12px;color:var(--text-light);font-weight:500}
+.q-badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.q-type{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500}
+.q-type-dx{background:#dbeafe;color:#2563eb}
+.q-type-pd{background:#fef3c7;color:#d97706}
+.q-type-tk{background:#d1fae5;color:#059669}
+.q-type-jd{background:#ede9fe;color:#7c3aed}
+.q-type-js{background:#fce7f3;color:#db2777}
+.q-chapter{font-size:11px;padding:2px 8px;background:#f3f4f6;border-radius:10px;color:var(--text-light)}
+.star-btn{font-size:22px;line-height:1;cursor:pointer;padding:0 2px;background:none;border:none}
+.q-text{font-size:15px;line-height:1.8;margin-bottom:14px;white-space:pre-wrap;color:var(--text)}
+/* Options */
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .12s;background:var(--card);user-select:none;-webkit-user-select:none}
+.opt:active{transform:scale(0.99)}
+.opt.sel{border-color:var(--primary);background:#eef2ff}
+.opt.cr{border-color:var(--success);background:#ecfdf5}
+.opt.wr{border-color:var(--danger);background:#fef2f2}
+.opt.dis{cursor:default;opacity:0.9}
+.opt .lt{width:26px;height:26px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0}
+.opt.cr .lt{background:var(--success);color:#fff}
+.opt.wr .lt{background:var(--danger);color:#fff}
+.opt.sel .lt{background:var(--primary);color:#fff}
+.opt .tx{font-size:14px;line-height:1.5;padding-top:2px;flex:1}
+/* Fill Input */
+.fill-ipt{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;outline:none;transition:border-color .15s;margin-bottom:10px;background:var(--card)}
+.fill-ipt:focus{border-color:var(--primary)}
+.fill-ipt.cr{border-color:var(--success);background:#ecfdf5}
+.fill-ipt.wr{border-color:var(--danger);background:#fef2f2}
+/* Answer Box */
+.ans-box{background:#f9fafb;border-radius:8px;padding:14px;margin-top:10px;border-left:3px solid var(--primary);display:none;font-size:14px;line-height:1.7}
+.ans-box.show{display:block}
+.ans-box .albl{font-weight:600;color:var(--primary);font-size:13px;margin-bottom:6px}
+.ans-box .act{white-space:pre-wrap}
+/* Result Banner */
+.rb{padding:12px 14px;border-radius:10px;font-size:14px;font-weight:600;text-align:center;margin-bottom:8px}
+.rb.cr{background:#ecfdf5;color:var(--success);border:1px solid #a7f3d0}
+.rb.wr{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
+/* Nav Buttons */
+.nav-row{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:8px;flex-wrap:wrap}
+.nav-btn{flex:1;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--card);font-size:14px;font-weight:500;cursor:pointer;transition:all .12s;text-align:center;min-width:60px}
+.nav-btn:active{transform:scale(0.97)}
+.nav-btn:disabled{opacity:0.35;cursor:default}
+.nav-btn.pri{background:var(--primary);color:#fff;border-color:var(--primary)}
+.nav-btn.suc{background:var(--success);color:#fff;border-color:var(--success)}
+.nav-page{font-size:13px;color:var(--text-light);text-align:center;min-width:70px}
+
+/* bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding:4px 0 env(safe-area-inset-bottom,4px) 0;box-shadow:0 -2px 8px rgba(0,0,0,.06)}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px;cursor:pointer;border:none;background:none;font-size:10px;color:var(--text-light);transition:color .12s;min-width:0}
+.bnav-item .bi{font-size:20px;line-height:1.2}
+.bnav-item .bl{font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.bnav-item.active{color:var(--primary)}
+.bnav-item .bd{background:var(--danger);color:#fff;font-size:9px;border-radius:8px;padding:0 5px;position:absolute;top:0;right:2px;line-height:14px}
+
+/* Chapter selector for mobile */
+.ch-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.ch-item{padding:14px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .12s;display:flex;justify-content:space-between;align-items:center}
+.ch-item:active{transform:scale(0.99);border-color:var(--primary-light)}
+.ch-item .chn{font-weight:600;font-size:14px}
+.ch-item .chc{font-size:12px;color:var(--text-light)}
+
+/* Data panel */
+.data-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.data-card{padding:14px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .12s}
+.data-card:active{transform:scale(0.99);border-color:var(--primary-light)}
+.data-card .dcn{font-weight:600;font-size:14px;margin-bottom:2px}
+.data-card .dcd{font-size:12px;color:var(--text-light)}
+.data-card .dcs{font-size:12px;color:var(--primary);font-weight:500;margin-top:2px}
+
+/* Empty */
+.empty{padding:40px 20px;text-align:center;color:var(--text-light)}
+.empty .ei{font-size:48px;margin-bottom:10px}
+.empty .et{font-size:15px}
+
+/* Switch row */
+.switch-row{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+.switch-row label{font-size:13px;color:var(--text-light);display:flex;align-items:center;gap:5px}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="title"><span class="icon">📚</span> <span id="pageTitle">计组刷题</span></div>
+  <div class="stats" id="statsBar">
+    <span id="statProg">0/0</span>
+    <span id="statWrong" style="color:var(--danger)">✗0</span>
+  </div>
+</div>
+
+<div class="content" id="mainContent"></div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bnav-item active" data-mode="chapter" onclick="switchMode('chapter')">
+    <span class="bi">📖</span><span class="bl">章节</span>
+  </button>
+  <button class="bnav-item" data-mode="all" onclick="switchMode('all')">
+    <span class="bi">📝</span><span class="bl">全部</span>
+  </button>
+  <button class="bnav-item" data-mode="random" onclick="switchMode('random')">
+    <span class="bi">🎲</span><span class="bl">随机</span>
+  </button>
+  <button class="bnav-item" data-mode="wrong" onclick="switchMode('wrong')">
+    <span class="bi">❌</span><span class="bl">错题</span>
+    <span class="bd" id="wrongBadge" style="display:none">0</span>
+  </button>
+  <button class="bnav-item" data-mode="browse" onclick="switchMode('browse')">
+    <span class="bi">🔍</span><span class="bl">题库</span>
+  </button>
+</nav>
+
+<script>
+// ============================================================
+// 题库数据 - 完全复用桌面版，可在此添加新章节/题目
+// ============================================================
+const QUESTION_BANK = {
+  "ch1":{
+    id:"ch1",name:"第一章 计算机系统概述",
+    questions:[
+      {id:"ch1_1",type:"danxuan",question:"所谓超大规模集成电路(VLSI),是指一个芯片上能容纳( )电子元件。",options:["A. 数十个","B. 数百个","C. 数千个","D. 数万个以上"],answer:"D"},
+      {id:"ch1_2",type:"danxuan",question:"对计算机的软、硬件资源进行管理，是( )的功能。",options:["A. 操作系统","B. 数据库管理系统","C. 语言处理程序","D. 用户应用软件"],answer:"A"},
+      {id:"ch1_3",type:"danxuan",question:"CPU的组成不包括( )",options:["A. 存储器","B. 寄存器","C. 控制器","D. 运算器"],answer:"A"},
+      {id:"ch1_4",type:"danxuan",question:"主机上能对指令进行译码的部件是( )",options:["A. 存储器","B. 寄存器","C. 控制器","D. 运算器"],answer:"C"},
+      {id:"ch1_5",type:"danxuan",question:"指令寄存器IR存放的是( )",options:["A. 下一条要执行的指令","B. 已执行完了的指令","C. 正在执行的指令","D. 要转移的指令"],answer:"C"},
+      {id:"ch1_6",type:"danxuan",question:"按冯·诺依曼结构组成计算机，主机的构成是( )",options:["A. 运算器和控制器","B. 运算器和内存储器","C. CPU和主存储器","D. 控制器和外部设备"],answer:"C"},
+      {id:"ch1_7",type:"danxuan",question:"下列描述中，( )是正确的。",options:["A. 控制器能理解、解释和执行所有机器的指令","B. 一台计算机包括输入设备、输出设备、控制器、存储器及运算器五个部件","C. 所有的数据运算都在控制器中完成","D. 以上都正确"],answer:"B"},
+      {id:"ch1_8",type:"danxuan",question:"有些计算机将一部分软件存储在只读存储器ROM中，称之为( )",options:["A. 硬件","B. 软件","C. 固件","D. 芯片"],answer:"C"},
+      {id:"ch1_9",type:"danxuan",question:"用来指定待执行指令所在地址的寄存器是( )",options:["A. 指令寄存器IR","B. 程序计数器PC","C. 地址寄存器MAR","D. 数据缓冲寄存器MDR"],answer:"B"},
+      {id:"ch1_10",type:"danxuan",question:"若某个程序在执行时，负责将源程序全部翻译成目标程序的机器语言指令序列，执行时计算机直接执行目标程序，则该程序称为( )",options:["A. 目标程序","B. 编译程序","C. 解释程序","D. 汇编程序"],answer:"D"},
+      {id:"ch1_11",type:"danxuan",question:"在计算机系统的层次结构中，从下往上，各级相对顺序正确的应当是( )。",options:["A. 汇编语言级——操作系统级——高级语言级","B. 微程序级----传统机器级——汇编语言级","C. 传统机器级——高级语言级——汇编语言级","D. 汇编语言级———系统分析级——高级语言级"],answer:"B"},
+      {id:"ch1_12",type:"danxuan",question:"在计算机系统的层次结构中，计算机被定义为( )的集合。",options:["A. 能存储和执行相应语言程序的算法和数据结构","B. 机器语言程序(指令序列)和微程序(微指令序列)","C. 应用软件和系统软件","D. 软件和硬件"],answer:"A"},
+      {id:"ch1_13",type:"danxuan",question:"开发并行性的途径有( )、资源重复和资源共享。",options:["A. 多计算机系统","B. 多道分时","C. 分布式处理系统","D. 时间重叠"],answer:"D"},
+      {id:"ch1_14",type:"danxuan",question:"从计算机系统结构上讲，机器语言程序员所看到的机器属性是( )。",options:["A. 计算机软件所要完成的功能","B. 计算机硬件的全部组成","C. 编程要用到的硬件组成","D. 计算机和部件的硬件实现"],answer:"C"},
+      {id:"ch1_15",type:"danxuan",question:"下列说法中不正确的是( )。",options:["A. 软件设计费用比软件重复生产的费用高","B. 硬件功能只需实现一次，而软件功能可能要多次重复实现","C. 硬件的生产费用比软件的生产费用高","D. 硬件的设计费用比软件的设计费用高"],answer:"B"},
+      {id:"ch1_16",type:"danxuan",question:"计算机系统结构不包括( )。",options:["A. 主存速度","B. 机器工作状态","C. 信息保护","D. 数据表示"],answer:"A"},
+      {id:"ch1_17",type:"danxuan",question:"计算机组成设计不考虑( )。",options:["A. 专用部件设置","B. 功能部件的集成度","C. 控制机构的组成","D. 缓冲技术"],answer:"B"},
+      {id:"ch1_18",type:"danxuan",question:"在计算机系统设计中，提高软件功能实现的比例可( )",options:["A. 提高解题速度","B. 减少需要的存储器容量","C. 提高系统的灵活性","D. 提高系统的性能价格比"],answer:"C"},
+      {id:"ch1_19",type:"danxuan",question:"除了分布式处理系统、机群系统外,并行处理计算按其基本结构特征可分为流水线计算机、阵列计算机、多处理机和( )。",options:["A. 计算机网络","B. 控制流计算机","C. 多处理器系统","D. 数据流计算机"],answer:"D"},
+      {id:"ch1_20",type:"danxuan",question:"不同系统的机器之间，实现软件移植的途径不包括( )。",options:["A. 用统一的高级语言","B. 用统一的汇编语言","C. 模拟","D. 仿真"],answer:"B"},
+      {id:"ch1_21",type:"danxuan",question:"从器件角度看，计算机经历了五代变化。但从系统结构看，至今绝大多数计算机仍属于( )计算机。",options:["A. 并行","B. 冯·诺依曼","C. 智能","D. 串行"],answer:"B"},
+      {id:"ch1_22",type:"danxuan",question:"冯·诺依曼机工作的基本方式的特点是( )。",options:["A. 多指令流单数据流","B. 按地址访问并顺序执行指令","C. 堆栈操作","D. 存储器按内容选择地址"],answer:"B"},
+      {id:"ch1_23",type:"danxuan",question:"在下面描述的汇编语言基本概念中，正确的表述是( )。",options:["A. 对程序员的训练要求来说，需要硬件知识","B. 汇编语言对机器的依赖性高","C. 用汇编语言编写程序的难度比高级语言小","D. 汇编语言编写的程序执行速度比高级语言慢"],answer:"B"},
+      {id:"ch1_24",type:"danxuan",question:"计算机硬件能直接执行的语言有( )。",options:["A. 符号语言","B. 机器语言","C. 机器语言与汇编语言","D. 汇编语言"],answer:"B"},
+      {id:"ch1_25",type:"danxuan",question:"下面说法不正确的是( )。",options:["A. 任何可以由软件实现的操作也可以用硬件来实现","B. 直接面向高级语言的机器目前已经实现","C. 固件就功能而言类似于软件，而从形态上来说又类似于硬件","D. 在计算机系统的层次结构中，微程序属于硬件级，其他四级都是软件级"],answer:"B"},
+      {id:"ch1_26",type:"danxuan",question:"1946年研制成功的第一台电子数字计算机称为( )。",options:["A. EDVAC","B. ENIAC","C. EVNAC","D. EINAC"],answer:"B"},
+      {id:"ch1_27",type:"danxuan",question:"完整的计算机系统应包括( )。",options:["A. 运算器、存储器、控制器","B. 外部设备和主机","C. 主机和存储器","D. 配套的硬件和软件设备"],answer:"D"},
+      {id:"ch1_28",type:"danxuan",question:"计算机系统中的存储器系统是指( )",options:["A. RAM存储器","B. ROM存储器","C. 内存储器","D. 内存储器和外存储器"],answer:"D"},
+      {id:"ch1_29",type:"danxuan",question:"至今为止,计算机中的所有信息仍以二进制方式表示的理由是( )",options:["A. 节约元件","B. 运算速度快","C. 物理器件性能所致","D. 信息处理方便"],answer:"C"},
+      {id:"ch1_30",type:"danxuan",question:"若某个程序在执行时，负责将源程序翻译成机器语言而且一次只能读取、翻译并执行源程序的一行语句，则该程序称为( )",options:["A. 目标程序","B. 编译程序","C. 解释程序","D. 汇编程序"],answer:"C"},
+      {id:"ch1_31",type:"danxuan",question:"运算器的主要功能除了进行算术运算之外，还能进行( )。",options:["A. 初等函数运算","B. 逻辑运算","C. 对错判断","D. 浮点运算"],answer:"B"},
+      {id:"ch1_32",type:"danxuan",question:"运算器的核心部分是( )。",options:["A. 数据总线","B. 多路开关","C. 算术逻辑运算单元","D. 累加寄存器"],answer:"C"},
+      {id:"ch1_33",type:"danxuan",question:"当且仅当( )发生时,认为浮点数溢出。",options:["A. 阶码上溢","B. 尾数上溢","C. 尾数与阶码同时上溢","D. 尾数或阶码上溢"],answer:"A"},
+      {id:"ch1_34",type:"danxuan",question:"关于ALU的叙述中,不正确的是( )",options:["A. ALU是功能较强的组合电路","B. ALU的基本逻辑结构是超前进位加法器","C. ALU的输入只有参加运算的两个数,输出是两个数的和","D. SN74181是典型的4位ALU"],answer:"C"},
+      {id:"ch1_35",type:"panduan",question:"现在的数字计算机系统的硬件都是由超大规模集成电路构成的。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch1_36",type:"panduan",question:"运算器只能对数据进行算术运算。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_37",type:"panduan",question:"存储器中存放计算机运行中的数据。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch1_38",type:"panduan",question:"在运算器中有若干个临时存放数据的部件，称为Cache。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_39",type:"panduan",question:"寄存器是存储器中的一个存放数据的单元。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_40",type:"panduan",question:"数据的存储以\"位\"为单位。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch1_41",type:"panduan",question:"数据的最小表示单位是字节。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_42",type:"panduan",question:"衡量存储器容量的单位是存储器能够存储的信息位数。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_43",type:"panduan",question:"程序执行时，如果指令在磁盘上，CPU可以直接到磁盘上读取指令。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_44",type:"panduan",question:"运算器和存储器一起构成了主机。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_45",type:"panduan",question:"控制器和存储器一起构成CPU。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_46",type:"panduan",question:"Visual C++是一种软件，C语言也是一种软件。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_47",type:"panduan",question:"汇编程序是将高级语言程序转换成可执行代码的程序。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_48",type:"panduan",question:"解释执行的程序比编译执行的程序速度要快。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_49",type:"panduan",question:"计算机中每个字的长度都是32位。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch1_50",type:"panduan",question:"在同一个系列的计算机中，各个计算机是相互兼容的。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch1_f1",type:"tiankong",question:"第一代计算机的逻辑元件采用____，主存使用延迟线或磁鼓存储信息。",answer:"电子管"},
+      {id:"ch1_f2",type:"tiankong",question:"第二代计算机的逻辑元件采用____，主存使用磁芯存储器。",answer:"晶体管"},
+      {id:"ch1_f3",type:"tiankong",question:"第三代计算机的逻辑元件采用____，半导体存储器开始取代磁芯存储器。",answer:"中小规模集成电路"},
+      {id:"ch1_f4",type:"tiankong",question:"第四代计算机的逻辑元件采用____，并产生了微处理器。",answer:"大规模集成电路和超大规模集成电路"},
+      {id:"ch1_f5",type:"tiankong",question:"冯·诺依曼机的核心思想是____。",answer:"存储程序"},
+      {id:"ch1_f6",type:"tiankong",question:"现代计算机的组织结构以____为中心，使输入/输出操作尽可能绕过CPU。",answer:"存储器"},
+      {id:"ch1_f7",type:"tiankong",question:"计算机硬件由运算器、控制器、存储器、输入/输出设备及____构成。",answer:"总线"},
+      {id:"ch1_f8",type:"tiankong",question:"运算器的主要功能是对数据进行____和____运算。",answer:"算术, 逻辑"},
+      {id:"ch1_f9",type:"tiankong",question:"控制器的主要任务是取指令、____和执行指令。",answer:"分析指令"},
+      {id:"ch1_f10",type:"tiankong",question:"主存通常由____和____组成。",answer:"随机存储器(RAM), 只读存储器(ROM)"},
+      {id:"ch1_f11",type:"tiankong",question:"高速缓存(Cache)的目的是解决____与主存之间速度不匹配的矛盾。",answer:"CPU"},
+      {id:"ch1_f12",type:"tiankong",question:"辅存(外存)的特点是存储容量大、可靠性高、____。",answer:"价格低"},
+      {id:"ch1_f13",type:"tiankong",question:"计算机软件分为____和____两大类。",answer:"系统软件, 应用软件"},
+      {id:"ch1_f14",type:"tiankong",question:"机器语言是计算机唯一能直接识别和执行的____语言。",answer:"二进制"},
+      {id:"ch1_f15",type:"tiankong",question:"汇编语言是一种与机器有关的____语言。",answer:"符号"},
+      {id:"ch1_f16",type:"tiankong",question:"高级语言如C语言、Java语言不依赖于____。",answer:"计算机硬件"},
+      {id:"ch1_f17",type:"tiankong",question:"计算机系统分为多级层次结构，其中第0、1、2级是____机器。",answer:"实"},
+      {id:"ch1_f18",type:"tiankong",question:"计算机的性能指标包括主频、CPU时钟周期、____、CPU执行时间等。",answer:"CPI"},
+      {id:"ch1_f19",type:"tiankong",question:"主频是指CPU的工作节拍频率，常用单位是____和____。",answer:"MHz, GHz"},
+      {id:"ch1_f20",type:"tiankong",question:"CPU时钟周期是主频的____，计算公式为T=1/f。",answer:"倒数"},
+      {id:"ch1_f21",type:"tiankong",question:"MIPS(百万条指令/秒)反映了计算机的____运算能力。",answer:"定点"},
+      {id:"ch1_f22",type:"tiankong",question:"MFLOPS(百万次浮点运算/秒)反映了计算机的____运算能力。",answer:"浮点"},
+      {id:"ch1_f23",type:"tiankong",question:"基本字长是直接参与运算的数据字的____位数。",answer:"二进制"},
+      {id:"ch1_f24",type:"tiankong",question:"存储容量的单位包括字节(B)、KB、MB、GB和____。",answer:"TB"},
+      {id:"ch1_f25",type:"tiankong",question:"主存存取周期是连续两次访问主存的____时间间隔。",answer:"最小"},
+      {id:"ch1_f26",type:"tiankong",question:"计算机硬件系统直接运行的程序是____程序。",answer:"机器语言"},
+      {id:"ch1_f27",type:"tiankong",question:"高级语言源程序转化为目标程序的过程称为____。",answer:"编译"},
+      {id:"ch1_f28",type:"tiankong",question:"计算机系统层次结构中，____语言计算机不属于虚拟机层次。",answer:"机器"},
+      {id:"ch1_f29",type:"tiankong",question:"计算机硬件系统中，信号通常通过____传输。",answer:"总线"},
+      {id:"ch1_f30",type:"tiankong",question:"计算机中，指令和数据均以二进制代码存放，能够区分它们的部件是____。",answer:"控制器"},
+      {id:"ch1_s1",type:"jianda",question:"计算机硬件包括哪些基本功能部件？为什么要有这些部件？",answer:"计算机硬件主要包括运算器、控制器、存储器、输入/输出设备和总线。\n运算器负责执行算术和逻辑运算；控制器负责协调各部件；存储器存储程序和数据；输入/输出设备用于交互；总线用于连接各部件。"},
+      {id:"ch1_s2",type:"jianda",question:"简述现代计算机常用的三级存储体系。",answer:"三级存储体系：Cache(最快，存放最常访问数据)、主存(工作存储，存放当前运行程序和数据)、辅助存储(长期存储大量数据，容量大速度慢)。"},
+      {id:"ch1_s3",type:"jianda",question:"运算器中有哪些寄存器？",answer:"累加器(ACC)、数据寄存器(DR)、地址寄存器(AR)、指令寄存器(IR)、程序计数器(PC)等。"},
+      {id:"ch1_s4",type:"jianda",question:"计算机软件有哪些类型？",answer:"系统软件(操作系统、编译器、驱动程序等)和应用软件(办公软件、图形处理、游戏等)。"}
+    ]
+  },
+  "ch2":{
+    id:"ch2",name:"第二/三章 数据表示与运算",
+    questions:[
+      {id:"ch2_1",type:"danxuan",question:"ALU作为运算器的核心部件，其属于( )。",options:["A. 时序逻辑电路","B. 组合逻辑电路","C. 控制器","D. 寄存器"],answer:"B"},
+      {id:"ch2_2",type:"danxuan",question:"组成一个运算器需要多个部件，但下面的( )不是组成运算器的部件。",options:["A. 状态寄存器","B. 数据总线","C. ALU","D. 地址寄存器"],answer:"D"},
+      {id:"ch2_3",type:"danxuan",question:"算术逻辑单元(ALU)的功能一般包括( )。",options:["A. 算术运算","B. 逻辑运算","C. 算术运算和逻辑运算","D. 加法运算"],answer:"C"},
+      {id:"ch2_4",type:"danxuan",question:"机器运算发生溢出的根本原因是( )。",options:["A. 寄存器的位数有限","B. 运算中将符号位的进位丢弃","C. 运算中将低位的进位丢弃","D. 数据运算中发生错误"],answer:"A"},
+      {id:"ch2_5",type:"danxuan",question:"若采用双符号位，则两个正数相加产生溢出的特征时，双符号位为( )。",options:["A. 00","B. 01","C. 10","D. 11"],answer:"B"},
+      {id:"ch2_6",type:"danxuan",question:"原码乘法是( )。",options:["A. 先取绝对值相乘，符号位单独处理","B. 用原码直接相乘","C. 被乘数原码，乘数绝对值相乘","D. 乘数原码，被乘数绝对值相乘"],answer:"A"},
+      {id:"ch2_7",type:"danxuan",question:"原码乘法时，符号位单独处理乘积的方式是( )。",options:["A. 相\"与\"","B. 相\"或\"","C. 相\"异或\"","D. 取绝对值较大数的符号"],answer:"C"},
+      {id:"ch2_8",type:"danxuan",question:"在原码乘法中，( )。",options:["A. 符号位参加运算","B. 符号位不参加运算","C. 符号位参加并改变结果","D. 符号位不参加，根据运算结果确定符号"],answer:"D"},
+      {id:"ch2_9",type:"danxuan",question:"一个C语言程序在32位机器上运行，x和z为int，y为short。x=127,y=-9,z=x+y后，x,y,z的值分别是( )。",options:["A. x=0000007FH,y=FFF9H,z=00000076H","B. x=0000007FH,y=FFF9H,z=FFFF0076H","C. x=0000007FH,y=FFF7H,z=FFFF0076H","D. x=0000007FH,y=FFF7H,z=00000076H"],answer:"A"},
+      {id:"ch2_10",type:"danxuan",question:"int si=-1;short i=si;unsigned j=0;if(i<j-1)判断依据和输出？",options:["A. CF，王道","B. CF，计算机教育","C. OF，王道","D. OF，计算机教育"],answer:"B"},
+      {id:"ch2_11",type:"danxuan",question:"[x]补=44H,[y]补=DCH,则x-2y的机器数和OF是？",options:["A. 8CH、1","B. 8CH、0","C. 68H、1","D. 68H、0"],answer:"A"},
+      {id:"ch2_12",type:"panduan",question:"浮点运算仅包括加减法，不包括乘除法。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch2_13",type:"panduan",question:"原码加减法运算需要先判断符号位。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch2_14",type:"panduan",question:"补码加减法运算中，符号位不参与运算。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch2_f1",type:"tiankong",question:"十六进制数2AB.1CH转换为十进制的计算式为____。",answer:"2×16²+10×16+11+1/16+12/256"},
+      {id:"ch2_f2",type:"tiankong",question:"ASCII中\"0\"比\"A\"的码值小____。",answer:"17(48 vs 65)"},
+      {id:"ch2_f3",type:"tiankong",question:"浮点数阶码用移码尾数用补码，规格化时尾数符号位与最高数值位____。",answer:"相反"},
+      {id:"ch2_f4",type:"tiankong",question:"汉字区位码的区号和位号范围均为____到____。",answer:"01, 94"},
+      {id:"ch2_f5",type:"tiankong",question:"-12的32位int补码(十六进制)是____。",answer:"FFFFFFF4"},
+      {id:"ch2_f6",type:"tiankong",question:"IEEE 754双精度浮点数阶码占____位。",answer:"11"},
+      {id:"ch2_f7",type:"tiankong",question:"反码11110010对应的真值是____。",answer:"-13"},
+      {id:"ch2_f8",type:"tiankong",question:"小端模式优先存放____字节。",answer:"低位"},
+      {id:"ch2_f9",type:"tiankong",question:"10101011.110101转十六进制为____。",answer:"AB.D4"},
+      {id:"ch2_f10",type:"tiankong",question:"8位原码最小负整数(十进制)是____。",answer:"-127"},
+      {id:"ch2_f11",type:"tiankong",question:"[X]移=11011(5位,偏置16)，对应补码阶码真值为____。",answer:"-5"},
+      {id:"ch2_f12",type:"tiankong",question:"汉字机内码由国标码每个字节的最高位____得到。",answer:"置1"},
+      {id:"ch2_f13",type:"tiankong",question:"ASCII中BEL的码值(十进制)是____。",answer:"7"},
+      {id:"ch2_f14",type:"tiankong",question:"-1.75的IEEE 754单精度阶码(二进制)是____。",answer:"01111111"},
+      {id:"ch2_f15",type:"tiankong",question:"补码10100000对应的原码是____。",answer:"11011111"},
+      {id:"ch2_f16",type:"tiankong",question:"阶码移码尾数原码时，规格化条件为尾数最高位为____。",answer:"1"},
+      {id:"ch2_f17",type:"tiankong",question:"162.52(八进制)转二进制____。",answer:"001110010.101010"},
+      {id:"ch2_f18",type:"tiankong",question:"15的8421BCD码是____。",answer:"00010101"},
+      {id:"ch2_f19",type:"tiankong",question:"-0.5补码规格化形式____。",answer:"1.100...×2⁻¹"},
+      {id:"ch2_f20",type:"tiankong",question:"原码乘除规则简单，但____运算复杂。",answer:"加减"},
+      {id:"ch2_f21",type:"tiankong",question:"单精度浮点数数符占____位。",answer:"1"},
+      {id:"ch2_f22",type:"tiankong",question:"常用进位计数制包括____、____、____和____。",answer:"二进制, 八进制, 十进制, 十六进制"},
+      {id:"ch2_f23",type:"tiankong",question:"10110.101转十进制____。",answer:"22.625"},
+      {id:"ch2_f24",type:"tiankong",question:"9的8421BCD码是____。",answer:"1001"},
+      {id:"ch2_f25",type:"tiankong",question:"字符\"A\"的ASCII码十进制是____。",answer:"65"},
+      {id:"ch2_f26",type:"tiankong",question:"汉字内部编码称____，输入编码称____。",answer:"机内码, 输入码"},
+      {id:"ch2_f27",type:"tiankong",question:"GB2312一级汉字按____排序。",answer:"汉语拼音排序"},
+      {id:"ch2_f28",type:"tiankong",question:"国标码4E44H对应的机内码高位字节____。",answer:"CE"},
+      {id:"ch2_f29",type:"tiankong",question:"定点数分____和____。",answer:"定点小数, 定点整数"},
+      {id:"ch2_f30",type:"tiankong",question:"符号位0表示____，1表示____。",answer:"正数, 负数"},
+      {id:"ch2_f31",type:"tiankong",question:"-0.1101的8位原码____。",answer:"1.1101000"},
+      {id:"ch2_f32",type:"tiankong",question:"补码11110011的真值____。",answer:"-13"},
+      {id:"ch2_f33",type:"tiankong",question:"反码用作____的中间过渡。",answer:"原码与补码转换"},
+      {id:"ch2_f34",type:"tiankong",question:"移码偏移值2ⁿ时,[X]移=____。",answer:"2ⁿ+X"},
+      {id:"ch2_f35",type:"tiankong",question:"规格化浮点数尾数绝对值应____。",answer:"|M|≥1/2"},
+      {id:"ch2_f36",type:"tiankong",question:"单精度浮点数阶码偏置值____。",answer:"127"},
+      {id:"ch2_f37",type:"tiankong",question:"0.1101×2³规格化后____。",answer:"1.101×2²"},
+      {id:"ch2_f38",type:"tiankong",question:"A6.3C转二进制____。",answer:"10100110.001111"},
+      {id:"ch2_f39",type:"tiankong",question:"253.65(八进制)转二进制____。",answer:"010101011.110101"},
+      {id:"ch2_f40",type:"tiankong",question:"43.625转二进制____。",answer:"101011.101"},
+      {id:"ch2_f41",type:"tiankong",question:"[X]补=11010101，则[-X]补=____(8位)。",answer:"00101011"},
+      {id:"ch2_f42",type:"tiankong",question:"\"IF A>B\"大端高位存放字符____。",answer:"I"},
+      {id:"ch2_f43",type:"tiankong",question:"16×16点阵每个汉字占____字节。",answer:"32"},
+      {id:"ch2_f44",type:"tiankong",question:"-127的8位补码____。",answer:"10000001"},
+      {id:"ch2_f45",type:"tiankong",question:"[X]移=01101的真值(偏置16)____。",answer:"-19"},
+      {id:"ch2_f46",type:"tiankong",question:"41A4C000H的十进制值____。",answer:"20.59375"},
+      {id:"ch2_f47",type:"tiankong",question:"非数值数据以____形式处理。",answer:"二进制编码"},
+      {id:"ch2_f48",type:"tiankong",question:"补码加减法相对原码的优势____。",answer:"统一加减法为加法运算"},
+      {id:"ch2_f49",type:"tiankong",question:"N=0.0110×2¹¹规格化后____。",answer:"0.1100×2¹⁰"},
+      {id:"ch2_f50",type:"tiankong",question:"8位无符号整数范围____到____。",answer:"0, 255"},
+      {id:"ch2_f51",type:"tiankong",question:"原码整数-1001的8位表示____。",answer:"10001001"},
+      {id:"ch2_s1",type:"jianda",question:"常用的进位计数制有哪些?基数和数位权重如何表示?",answer:"十进制(基10)、二进制(基2)、八进制(基8)、十六进制(基16)。每位权为基数的幂。"},
+      {id:"ch2_s2",type:"jianda",question:"如何将二进制数转换为十进制数?",answer:"按权展开相加。如10110.101=1×2⁴+0×2³+1×2²+1×2¹+0×2⁰+1×2⁻¹+0×2⁻²+1×2⁻³=22.625"},
+      {id:"ch2_s3",type:"jianda",question:"真值和机器数的区别?",answer:"真值是实际数值带正负号；机器数是计算机编码(原码/反码/补码/移码)。"},
+      {id:"ch2_s4",type:"jianda",question:"定点数和浮点数的区别?",answer:"定点数小数点位置固定(定点小数/整数)；浮点数小数点浮动，由阶码和尾数组成，范围更大。"},
+      {id:"ch2_s5",type:"jianda",question:"计算机如何实现加减法?",answer:"用补码。加法直接加，减法A-B=A+(-B)，溢出通过符号位判断。"},
+      {id:"ch2_s6",type:"jianda",question:"浮点加减法步骤?",answer:"①对阶 ②尾数加减 ③规格化 ④舍入 ⑤溢出判断"},
+      {id:"ch2_s7",type:"jianda",question:"ALU的功能和组成?",answer:"执行算术(加减乘除)和逻辑(与或非异或)运算。由加法器、逻辑电路、控制电路组成。"},
+      {id:"ch2_s8",type:"jianda",question:"浮点乘除法步骤?",answer:"乘法：阶码相加→尾数相乘→规格化→舍入→溢出判断。除法：阶码相减→尾数相除→规格化→舍入→溢出判断。"},
+      {id:"ch2_c1",type:"jisuan",question:"已知A=-1001,B=-0101，求[A+B]补和[A-B]补。",answer:"[A]补=11,0111 [B]补=11,1011 [-B]补=00,0101\n[A+B]补=11,0010 [A-B]补=11,1100 无溢出"},
+      {id:"ch2_c2",type:"jisuan",question:"R1=80000004H，分别按unsigned int和int解释，求x、x/2、2x的机器码和真值。",answer:"无符号：x=2³¹+4, x/2=40000002H=2³⁰+2, 2x=00000008H(溢出)\n有符号：x=-2³¹+4, x/2=C0000002H=-2³⁰+2, 2x=00000008H(溢出)"},
+      {id:"ch2_c3",type:"jisuan",question:"x=134,y=246,m=x,n=y,z1=x-y,z2=x+y,k1=m-n,k2=m+n，求R1,R5,R6,m,k1。能否用同一加法器？",answer:"R1=86H,R5=8CH,R6=7CH,m=-122,k1=-116。能，有/无符号加减均可在n位加法器中实现。"}
+    ]
+  },
+  "ch3":{
+    id:"ch3",name:"第四章 存储系统",
+    questions:[
+      {id:"ch3_1",type:"danxuan",question:"32K×8位RAM芯片，除电源和地外引出线最小数目？",options:["A. 25","B. 23","C. 40","D. 32"],answer:"A"},
+      {id:"ch3_2",type:"danxuan",question:"主存中存放信息的部件是？",options:["A. 地址译码线路","B. 存储体","C. 读写线路","D. 地址寄存器"],answer:"B"},
+      {id:"ch3_3",type:"danxuan",question:"A15~A0地址线，用2KB芯片组成8KB，加在各芯片上的地址线是？",options:["A. A10~A0","B. A11~A0","C. A9~A0","D. A8~A0"],answer:"A"},
+      {id:"ch3_4",type:"danxuan",question:"可在线改写的只读存储器是？",options:["A. EPROM","B. EEPROM","C. RAM","D. ROM"],answer:"B"},
+      {id:"ch3_5",type:"danxuan",question:"存取周期与存取时间的关系？",options:["A. 不确定","B. 周期<时间","C. 周期>时间","D. 周期=时间"],answer:"C"},
+      {id:"ch3_6",type:"danxuan",question:"存取速度最快的是？",options:["A. Cache","B. 寄存器","C. 光盘","D. 内存"],answer:"B"},
+      {id:"ch3_7",type:"danxuan",question:"属于易失性存储器的是？",options:["A. CD-ROM","B. Cache","C. EEPROM","D. Flash"],answer:"B"},
+      {id:"ch3_8",type:"danxuan",question:"关于DRAM刷新错误的是？",options:["A. 刷新期间不允许访存","B. 通过\"读但不输出\"实现","C. 对电容重新充电","D. 有专门电路，访存期间允许刷新"],answer:"D"},
+      {id:"ch3_9",type:"danxuan",question:"下面说法正确的是？",options:["A. 有稳定地址和数据加片选才能写","B. 有稳定地址和片选才能读","C. 信号应有一定持续时间","D. 以上都正确"],answer:"D"},
+      {id:"ch3_10",type:"danxuan",question:"00000H~07FFFH ROM，20位地址，16K×8 RAM芯片构成08000H~FFFFFH需几片？",options:["A. 61","B. 62","C. 63","D. 64"],answer:"B"},
+      {id:"ch3_11",type:"danxuan",question:"存取周期是指？",options:["A. 连续写的最短间隔","B. 连续读或写的最短间隔","C. 写入时间","D. 一次读写时间"],answer:"B"},
+      {id:"ch3_12",type:"danxuan",question:"与辅存比主存的特点是？",options:["A. 容量小速度快成本低","B. 容量大速度快成本高","C. 容量小速度快成本高","D. 容量大速度快成本低"],answer:"C"},
+      {id:"ch3_13",type:"danxuan",question:"8K×16位存储器，地址线和数据线总和？",options:["A. 16","B. 28","C. 29","D. 64"],answer:"C"},
+      {id:"ch3_14",type:"danxuan",question:"字长32位，容量16MB，双字编址寻址范围？",options:["A. 8MB","B. 16MB","C. 2M","D. 16M"],answer:"C"},
+      {id:"ch3_15",type:"danxuan",question:"32K×16位存储器地址线和数据线？",options:["A. 地址16数据16","B. 地址15数据16","C. 地址32数据16","D. 地址16数据32"],answer:"B"},
+      {id:"ch3_16",type:"danxuan",question:"关于主存组成正确的是？",options:["A. 可由RAM/ROM/CMOS组成","B. 只能RAM","C. 只能ROM","D. 可由RAM和ROM组成"],answer:"D"},
+      {id:"ch3_17",type:"danxuan",question:"动态RAM的特点是？",options:["A. 存储内容会变化","B. 读出后需重写","C. 每隔一定时间重写一遍","D. 需动态改变访存地址"],answer:"C"},
+      {id:"ch3_18",type:"danxuan",question:"四体低位交叉，每体64K×32位，周期200ns，正确的是？",options:["A. 200ns提供256位","B. 200ns提供32位","C. 200ns提供128位","D. 200ms提供64K位"],answer:"C"},
+      {id:"ch3_19",type:"danxuan",question:"Cache的目的是？",options:["A. 解决速度匹配","B. 提高主存速度","C. 扩大容量并提高速度","D. 扩大容量"],answer:"A"},
+      {id:"ch3_20",type:"danxuan",question:"主存块可映射到Cache任意块称为？",options:["A. 全相联","B. 组相联","C. 混合","D. 直接"],answer:"A"},
+      {id:"ch3_21",type:"danxuan",question:"n体交叉带宽是单体n倍的条件？",options:["A. 任何情况","B. 连续访存同一模块","C. 任何情况不能","D. 连续访存不同模块"],answer:"D"},
+      {id:"ch3_22",type:"danxuan",question:"关于多体交叉不正确的是？",options:["A. 分成能独立读写字长为多个主存字的主体","B. 一体多字每次读几个字","C. 需足够长寄存器保存","D. 分别对每个体读写协同运行"],answer:"A"},
+      {id:"ch3_23",type:"danxuan",question:"32字×64位，m=4，T=200ns，r=50ns，带宽？",options:["A. 73×10⁷b/s","B. 18×10⁷b/s","C. 32×10⁷b/s","D. 8×10⁷b/s"],answer:"A"},
+      {id:"ch3_24",type:"danxuan",question:"n体交叉T与t的关系及连续读n字时间？",options:["A. T=nt,T+nt","B. T=nt,T+(n-1)t","C. T=(n-1)t,T+nt","D. T=t,T+nt"],answer:"B"},
+      {id:"ch3_25",type:"danxuan",question:"虚拟存储器目的？",options:["A. 扩大物理内存","B. 扩大辅存空间","C. 扩大寻址空间","D. 提高主存速度"],answer:"C"},
+      {id:"ch3_26",type:"danxuan",question:"虚拟存储器执行时谁完成地址映射？",options:["A. 硬件自动","B. 编译器","C. 操作系统","D. 程序员"],answer:"C"},
+      {id:"ch3_27",type:"danxuan",question:"程序员编程所用地址叫？",options:["A. 逻辑地址","B. 真实地址","C. 指针地址","D. 物理地址"],answer:"A"},
+      {id:"ch3_p1",type:"panduan",question:"所有ROM只能读不能更改。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch3_p2",type:"panduan",question:"主存总容量=字数×位数。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p3",type:"panduan",question:"磁盘属于随机存储器。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch3_p4",type:"panduan",question:"内存带宽=(总线频率×带宽位数)/8。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p5",type:"panduan",question:"MOS读数据破坏原信息，需刷新。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch3_p6",type:"panduan",question:"存储层次最顶层是调整缓冲存储器。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch3_p7",type:"panduan",question:"虚拟存储器本质是把硬盘当内存，物理内存未增加。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p8",type:"panduan",question:"段式虚拟存储器每段大小相等。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch3_p9",type:"panduan",question:"页表过长影响系统性能。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p10",type:"panduan",question:"RAM可随机存取，断电丢失。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p11",type:"panduan",question:"ROM只读，存固定系统程序。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p12",type:"panduan",question:"半导体存储器速度快集成度高。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p13",type:"panduan",question:"主存速度快容量小价格高，与CPU直接交换。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p14",type:"panduan",question:"辅存速度慢容量大价格低，不与CPU直接交换。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p15",type:"panduan",question:"Cache由SRAM构成，速度比主存快。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch3_p16",type:"panduan",question:"SRAM速度快集成度低。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p17",type:"panduan",question:"EPROM可通过紫外线或电信号擦除。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch3_p18",type:"panduan",question:"Flash可在在线快速擦除与重写。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p19",type:"panduan",question:"位扩展是增加芯片数据位数满足字长。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch3_p20",type:"panduan",question:"字扩展是增加芯片数量扩大字数。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_p21",type:"panduan",question:"Cache利用局部性原理。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch3_f1",type:"tiankong",question:"多级存储体系包括Cache、____和辅助存储器。",answer:"主存储器"},
+      {id:"ch3_f2",type:"tiankong",question:"RAM存取时间与物理位置____。",answer:"无关"},
+      {id:"ch3_f3",type:"tiankong",question:"ROM存放固定不变的____。",answer:"系统程序"},
+      {id:"ch3_f4",type:"tiankong",question:"直接存取存储器又称____存取。",answer:"半顺序"},
+      {id:"ch3_f5",type:"tiankong",question:"按介质分有半导体、____和光介质。",answer:"磁性材料"},
+      {id:"ch3_f6",type:"tiankong",question:"主存指标：容量、存取时间、存取周期和____。",answer:"存储器带宽"},
+      {id:"ch3_f7",type:"tiankong",question:"芯片结构包括存储矩阵、译码驱动器和____。",answer:"读/写电路"},
+      {id:"ch3_f8",type:"tiankong",question:"SRAM典型的是____存储元。",answer:"六管"},
+      {id:"ch3_f9",type:"tiankong",question:"DRAM目前主流____存储元。",answer:"单管MOS"},
+      {id:"ch3_f10",type:"tiankong",question:"扩展方式有位扩展、字扩展和____。",answer:"字位同时扩展"},
+      {id:"ch3_f11",type:"tiankong",question:"多体交叉有高位和____编址。",answer:"低位交叉"},
+      {id:"ch3_f12",type:"tiankong",question:"Cache通常由____构成。",answer:"SRAM"},
+      {id:"ch3_f13",type:"tiankong",question:"地址映射有直接、全相联和____。",answer:"组相联映射"},
+      {id:"ch3_f14",type:"tiankong",question:"替换算法有FIFO、LRU、LFU和____。",answer:"随机替换"},
+      {id:"ch3_f15",type:"tiankong",question:"虚拟存储器借助辅存扩大____容量。",answer:"主存"},
+      {id:"ch3_f16",type:"tiankong",question:"页式存储中虚地址到实地址由____实现。",answer:"页表"},
+      {id:"ch3_f17",type:"tiankong",question:"段页式虚地址由段号、页号和____组成。",answer:"页内地址"},
+      {id:"ch3_f18",type:"tiankong",question:"Cache—主存解决速度，主存—辅存解决____。",answer:"容量"},
+      {id:"ch3_f19",type:"tiankong",question:"Cache和主存数据调动由____自动完成。",answer:"硬件"},
+      {id:"ch3_s1",type:"jianda",question:"存储器分类方式有哪些？",answer:"按存取(随机/只读/顺序/直接)、按介质(半导体/磁性/光)、按可保存性(易失/非易失)、按作用(主存/辅存/缓存)。"},
+      {id:"ch3_s2",type:"jianda",question:"简述存储器的层次结构。",answer:"Cache(顶层)→主存→辅存。目的：在容量、速度和成本间平衡。"},
+      {id:"ch3_s3",type:"jianda",question:"主存的技术指标？",answer:"存储容量、存取时间、存取周期、存储器带宽。"},
+      {id:"ch3_s4",type:"jianda",question:"ROM的类型？",answer:"掩模ROM(厂家写入)、PROM(一次性)、EPROM(可擦写)、EEPROM(电擦写)。"},
+      {id:"ch3_s5",type:"jianda",question:"Cache的工作原理？",answer:"利用局部性原理存频繁访问数据副本。命中直接读，未命中从主存读并调入。"},
+      {id:"ch3_s6",type:"jianda",question:"Cache地址映射三种方式？",answer:"直接映射(固定行)、全相联(任意行)、组相联(组间直接组内全相联)。"},
+      {id:"ch3_c1",type:"jisuan",question:"30位字地址32位字长：①存储容量？②用256M×8位芯片需几片？③芯片选择需几位？",answer:"①4GB ②16片 ③2位"},
+      {id:"ch3_c2",type:"jisuan",question:"16MB主存，256KBCache，每块16B：①标志、块号、块内地址位数？②主存块数？③Cache块数？",answer:"①标志6位,块号14位,块内4位 ②1M块 ③16K块"},
+      {id:"ch3_c3",type:"jisuan",question:"32KB直接映射Cache,1MB主存,64B块：66FACH位置？",answer:"对应Cache块446"},
+      {id:"ch3_c4",type:"jisuan",question:"32位静态RAM周期50ns,传输速率？",answer:"80MB/s"},
+      {id:"ch3_c5",type:"jisuan",question:"500ns周期访问16位,带宽？",answer:"3.2×10⁷位/s"},
+      {id:"ch3_c6",type:"jisuan",question:"1900次Cache+100次主存，Cache50ns主存250ns，效率和平均访问时间？",answer:"命中率0.95,平均60ns,效率83.3%"},
+    ]
+  },
+  "ch4":{
+    id:"ch4",name:"第五章 指令系统",
+    questions:[
+      {id:"ch4_1",type:"danxuan",question:"单地址指令另一个操作数常采用？",options:["A. 堆栈","B. 立即","C. 隐含","D. 间接"],answer:"C"},
+      {id:"ch4_2",type:"danxuan",question:"寄存器间接寻址操作数在？",options:["A. 主存","B. PC","C. 堆栈","D. 寄存器"],answer:"A"},
+      {id:"ch4_3",type:"danxuan",question:"对寄存器中操作数的寻址方式？",options:["A. 间接","B. 寄存器间接","C. 寄存器","D. 直接"],answer:"C"},
+      {id:"ch4_4",type:"danxuan",question:"采用不同寻址方式的目的？",options:["A. 实现程序控制","B. 降低译码难度","C. 缩短字长扩大空间提高灵活性","D. 降低设计难度"],answer:"C"},
+      {id:"ch4_5",type:"danxuan",question:"隐含寻址方式的例子？",options:["A. IO接口寄存器","B. 堆栈","C. 通用寄存器","D. 主存"],answer:"B"},
+      {id:"ch4_6",type:"danxuan",question:"基址寻址有效地址是？",options:["A. 基址寄存器内容","B. PC+形式地址","C. 基址+形式地址","D. 变址+形式地址"],answer:"C"},
+      {id:"ch4_7",type:"danxuan",question:"跳跃寻址可实现？",options:["A. 外存到内存","B. 都不正确","C. 条件/无条件转移","D. 虚拟内存转换"],answer:"C"},
+      {id:"ch4_8",type:"danxuan",question:"操作数不可能来自？",options:["A. 控制存储器","B. 寄存器","C. 主存","D. 指令本身"],answer:"A"},
+      {id:"ch4_9",type:"danxuan",question:"SP内容是？",options:["A. 栈顶内容","B. 栈底地址","C. 栈顶地址","D. 栈底内容"],answer:"C"},
+      {id:"ch4_10",type:"danxuan",question:"一地址指令？",options:["A. 只能双操作数","B. 只能单操作数","C. 无双重功能","D. 可单可双"],answer:"D"},
+      {id:"ch4_11",type:"danxuan",question:"地址码直接给操作数本身称为？",options:["A. 直接寻址","B. 基址寻址","C. 间接寻址","D. 立即寻址"],answer:"D"},
+      {id:"ch4_12",type:"danxuan",question:"操作数可来自？",options:["A. 内存","B. 以上都对","C. 外设接口","D. 通用寄存器"],answer:"B"},
+      {id:"ch4_p1",type:"panduan",question:"不同功能的指令操作码可相同。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch4_p2",type:"panduan",question:"指令字长与机器字长通常相等。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch4_p3",type:"panduan",question:"RISC指令长度固定种类少。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p4",type:"panduan",question:"RISC兼容性优于CISC。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch4_p5",type:"panduan",question:"RISC通用寄存器数量较少。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p6",type:"panduan",question:"RISC寻址方式尽量少，指令功能尽可能强。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p7",type:"panduan",question:"RISC通过增加寄存器减少访存。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p8",type:"panduan",question:"RISC目标是减少指令数，可增每指令功能。",options:["A. 对","B. 错"],answer:"B"},
+      {id:"ch4_p9",type:"panduan",question:"RISC更容易用硬布线实现。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p10",type:"panduan",question:"CISC指令功能强大便于汇编编程。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p11",type:"panduan",question:"指令格式由操作码和地址码字段组成。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p12",type:"panduan",question:"立即寻址操作数在指令中。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p13",type:"panduan",question:"相对寻址EA=PC+偏移量。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_p14",type:"panduan",question:"变址寻址EA=变址寄存器+偏移量。",options:["A. 对","B. 错"],answer:"A"},
+      {id:"ch4_f1",type:"tiankong",question:"指令由操作码字段和____字段组成。",answer:"地址码"},
+      {id:"ch4_f2",type:"tiankong",question:"零地址指令只有____。",answer:"操作码"},
+      {id:"ch4_f3",type:"tiankong",question:"立即数操作数在____中。",answer:"指令"},
+      {id:"ch4_f4",type:"tiankong",question:"直接寻址给出操作数的____。",answer:"有效地址"},
+      {id:"ch4_f5",type:"tiankong",question:"寄存器寻址操作数在____。",answer:"通用寄存器"},
+      {id:"ch4_f6",type:"tiankong",question:"寄存器间接寻址寄存器存的是____。",answer:"地址"},
+      {id:"ch4_f7",type:"tiankong",question:"相对寻址用____提供基准地址。",answer:"PC"},
+      {id:"ch4_f8",type:"tiankong",question:"段寻址实质是____。",answer:"基址寻址"},
+      {id:"ch4_f9",type:"tiankong",question:"堆栈寻址EA由____隐含给出。",answer:"SP"},
+      {id:"ch4_f10",type:"tiankong",question:"RISC以____操作指令为主。",answer:"寄存器—寄存器"},
+      {id:"ch4_f11",type:"tiankong",question:"形成操作数地址的方式称____。",answer:"数据寻址方式"},
+      {id:"ch4_f12",type:"tiankong",question:"CISC向____转变是发展趋势。",answer:"RISC"},
+      {id:"ch4_s1",type:"jianda",question:"指令格式由哪两字段组成？",answer:"操作码字段和地址码字段。"},
+      {id:"ch4_s2",type:"jianda",question:"常见寻址方式有哪些？",answer:"隐含、立即、直接、寄存器、寄存器间接、相对、基址、变址、堆栈等。"},
+      {id:"ch4_s3",type:"jianda",question:"RISC与CISC区别？",answer:"CISC指令复杂多功能强大，RISC简化执行快。"},
+    ]
+  }
+};
+
+// ============================================================
+const TYPE_LABELS={danxuan:"单选题",panduan:"判断题",tiankong:"填空题",jianda:"简答题",jisuan:"计算题"};
+const TYPE_CLASSES={danxuan:"q-type-dx",panduan:"q-type-pd",tiankong:"q-type-tk",jianda:"q-type-jd",jisuan:"q-type-js"};
+const LETTERS="ABCDEFGH";
+
+let state={
+  mode:"chapter", chapterId:"ch1", currentIndex:0, answered:false, selectedOption:null,
+  wrongSet:new Set(), starredSet:new Set(), history:{}
+};
+
+function ls(k,v){try{if(v===undefined){const d=localStorage.getItem("cc_"+k);return d?JSON.parse(d):null}else{localStorage.setItem("cc_"+k,JSON.stringify(v));return v}}catch(e){return v}}
+function loadState(){try{
+  const w=ls("wrong");if(w)state.wrongSet=new Set(w);
+  const s=ls("starred");if(s)state.starredSet=new Set(s);
+  const h=ls("history");if(h)state.history=h;
+}catch(e){}}
+function saveState(){try{
+  ls("wrong",[...state.wrongSet]);ls("starred",[...state.starredSet]);ls("history",state.history);
+}catch(e){}}
+
+function getAllQuestions(){const a=[];for(const k in QUESTION_BANK){const c=QUESTION_BANK[k];c.questions.forEach(q=>a.push({...q,chapterId:k,chapterName:c.name}))}return a}
+function getChQ(chId){const c=QUESTION_BANK[chId];return c?c.questions.map(q=>({...q,chapterId:chId,chapterName:c.name})):[]}
+function getCurQ(){
+  switch(state.mode){
+    case"chapter":return getChQ(state.chapterId);
+    case"all":return getAllQuestions();
+    case"random":{const a=getAllQuestions();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+    case"wrong":return getAllQuestions().filter(q=>state.wrongSet.has(q.id));
+    case"starred":return getAllQuestions().filter(q=>state.starredSet.has(q.id));
+    default:return getChQ(state.chapterId);
+  }
+}
+
+function render(){
+  renderStats();
+  const qs=getCurQ();
+  const title=document.getElementById("pageTitle");
+  const content=document.getElementById("mainContent");
+  // nav
+  document.querySelectorAll(".bnav-item").forEach(el=>el.classList.toggle("active",el.dataset.mode===state.mode));
+  const wb=document.getElementById("wrongBadge");
+  if(state.wrongSet.size>0){wb.style.display="block";wb.textContent=state.wrongSet.size}else{wb.style.display="none"}
+
+  if(state.mode==="browse"){title.textContent="🔍 题库浏览";renderBrowse(content);return}
+  if(qs.length===0){
+    title.textContent=state.mode==="wrong"?"❌ 错题本":state.mode==="starred"?"⭐ 收藏":"📝 刷题";
+    content.innerHTML=`<div class="empty"><div class="ei">🎉</div><div class="et">${state.mode==="wrong"?"暂无错题，继续加油！":state.mode==="starred"?"暂无收藏题目":"暂无题目"}</div></div>`;
+    return;
+  }
+  const modeNames={chapter:"📖 按章节",all:"📝 全部题目",random:"🎲 随机刷题",wrong:"❌ 错题本",starred:"⭐ 收藏"};
+  title.textContent=modeNames[state.mode]||"刷题";
+
+  const idx=Math.min(state.currentIndex,qs.length-1);
+  const q=qs[idx];if(!q)return;
+  const isChoice=q.type==="danxuan"||q.type==="panduan";
+  const isFill=q.type==="tiankong";
+  const isOpen=q.type==="jianda"||q.type==="jisuan";
+
+  let h=`<div class="progress-bar"><div class="progress-fill" style="width:${((idx+1)/qs.length*100).toFixed(1)}%"></div></div>`;
+  h+=`<div class="q-card">`;
+  h+=`<div class="q-header"><span class="q-number">#${idx+1}/${qs.length}</span><div class="q-badges">`;
+  if(q.chapterName)h+=`<span class="q-chapter">${q.chapterName}</span>`;
+  h+=`<span class="q-type ${TYPE_CLASSES[q.type]}">${TYPE_LABELS[q.type]||q.type}</span>`;
+  const starred=state.starredSet.has(q.id);
+  h+=`<button class="star-btn" onclick="toggleStar('${q.id}')">${starred?'⭐':'☆'}</button>`;
+  h+=`</div></div>`;
+  h+=`<div class="q-text">${q.question}</div>`;
+
+  if(isChoice){
+    h+=`<div class="options">`;
+    q.options.forEach((opt,oi)=>{
+      const lt=LETTERS[oi];let cls="opt";
+      if(state.answered){cls+=" dis";if(lt===q.answer)cls+=" cr";else if(lt===state.selectedOption)cls+=" wr"}else if(lt===state.selectedOption)cls+=" sel";
+      h+=`<div class="${cls}" onclick="${state.answered?'':`pickOpt('${lt}','${q.id}')`}"><span class="lt">${lt}</span><span class="tx">${opt.replace(/^[A-Z]\.\s*/,'')}</span></div>`;
+    });
+    h+=`</div>`;
+  }
+  if(isFill){
+    h+=`<input class="fill-ipt" id="fi" placeholder="输入答案..." onkeydown="if(event.key==='Enter')checkFill('${q.id}')">`;
+    if(state.answered)h+=`<div style="font-size:13px;margin-bottom:8px"><strong>正确答案：</strong>${q.answer}</div>`;
+    else h+=`<button class="nav-btn pri" onclick="checkFill('${q.id}')" style="padding:8px 16px;flex:none;font-size:13px">确认</button>`;
+  }
+  if(isOpen){
+    if(state.answered)h+=`<div class="ans-box show"><div class="albl">📌 参考答案</div><div class="act">${q.answer}</div></div>`;
+    else h+=`<button class="nav-btn pri" onclick="showAns()" style="padding:8px 16px;flex:none;font-size:13px">查看答案</button><div class="ans-box" id="abox"><div class="albl">📌 参考答案</div><div class="act">${q.answer}</div></div>`;
+  }
+  if(isChoice&&state.answered){
+    const cr=state.selectedOption===q.answer;
+    h+=`<div class="rb ${cr?'cr':'wr'}">${cr?'✅ 回答正确！':'❌ 回答错误'}${cr?'':`，正确答案：${q.answer}`}</div>`;
+  }
+  if(isFill&&state.answered){
+    h+=`<div class="rb" id="fillR"></div>`;
+  }
+  h+=`</div>`;
+  // nav
+  h+=`<div class="nav-row">`;
+  h+=`<button class="nav-btn" onclick="go(-1)" ${idx===0?'disabled':''}>◀</button>`;
+  h+=`<span class="nav-page">${idx+1}/${qs.length}</span>`;
+  h+=`<button class="nav-btn" onclick="go(1)" ${idx>=qs.length-1?'disabled':''}>▶</button>`;
+  if(state.mode==="random")h+=`<button class="nav-btn suc" onclick="nextRand()">🎲</button>`;
+  h+=`</div>`;
+  content.innerHTML=h;
+  // restore fill
+  if(isFill&&state.answered&&state.selectedOption){
+    const inp=document.getElementById("fi");
+    if(inp){inp.value=state.selectedOption;checkFill(q.id,true)}
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderStats(){
+  const all=getAllQuestions();
+  const done=Object.keys(state.history).length;
+  document.getElementById("statProg").textContent=done+"/"+all.length;
+}
+
+function pickOpt(lt,qId){
+  const qs=getCurQ().find(q=>q.id===qId);if(!q||state.answered)return;
+  state.selectedOption=lt;state.answered=true;
+  const cr=lt===q.answer;
+  state.history[q.id]={correct:cr,count:(state.history[q.id]?.count||0)+1};
+  if(cr)state.wrongSet.delete(q.id);else state.wrongSet.add(q.id);
+  saveState();render();
+}
+
+function checkFill(qId,quiet){
+  const q=getCurQ().find(q=>q.id===qId);if(!q)return;
+  const inp=document.getElementById("fi");if(!inp)return;
+  const v=inp.value.trim();if(!v&&!quiet)return;
+  state.answered=true;state.selectedOption=v;
+  const n=s=>s.replace(/\s+/g,'').toLowerCase();
+  const cr=n(v)===n(q.answer)||q.answer.split(',').some(a=>n(v).includes(n(a)));
+  if(!quiet){
+    state.history[q.id]={correct:cr,count:(state.history[q.id]?.count||0)+1};
+    if(cr)state.wrongSet.delete(q.id);else state.wrongSet.add(q.id);
+    saveState();
+  }
+  inp.className="fill-ipt "+(cr?"cr":"wr");
+  const r=document.getElementById("fillR");
+  if(r){r.textContent=cr?"✅ 回答正确！":"❌ 回答错误";r.className="rb "+(cr?"cr":"wr");if(!cr)r.innerHTML+=`，正确答案：${q.answer}`}
+  render();
+}
+
+function showAns(){const b=document.getElementById("abox");if(b){b.classList.add("show");state.answered=true}}
+
+function toggleStar(qId){
+  if(state.starredSet.has(qId))state.starredSet.delete(qId);else state.starredSet.add(qId);
+  saveState();render();
+}
+
+function go(d){const qs=getCurQ();const ni=state.currentIndex+d;if(ni<0||ni>=qs.length)return;state.currentIndex=ni;state.answered=false;state.selectedOption=null;render()}
+function nextRand(){const qs=getCurQ();state.currentIndex=Math.floor(Math.random()*qs.length);state.answered=false;state.selectedOption=null;render()}
+
+function switchMode(m){
+  if(m==="chapter"&&state.mode==="chapter"){renderChSelect();return}
+  state.mode=m;state.currentIndex=0;state.answered=false;state.selectedOption=null;
+  if(m==="chapter")renderChSelect();else render();
+}
+function switchCh(id){state.chapterId=id;state.mode="chapter";state.currentIndex=0;state.answered=false;state.selectedOption=null;render()}
+
+function renderChSelect(){
+  const title=document.getElementById("pageTitle");title.textContent="📖 选择章节";
+  const content=document.getElementById("mainContent");
+  let h=`<div class="stats-row">`;
+  let total=0;for(const k in QUESTION_BANK){const c=QUESTION_BANK[k];total+=c.questions.length}
+  h+=`<div class="stat-mini"><div class="num">${total}</div><div class="lbl">总题数</div></div>`;
+  h+=`<div class="stat-mini"><div class="num">${Object.keys(state.history).length}</div><div class="lbl">已答</div></div>`;
+  h+=`<div class="stat-mini"><div class="num">${state.wrongSet.size}</div><div class="lbl">错题</div></div>`;
+  h+=`</div>`;
+  h+=`<div class="ch-list">`;
+  for(const k in QUESTION_BANK){const c=QUESTION_BANK[k];
+    h+=`<div class="ch-item" onclick="switchCh('${k}')"><div><div class="chn">${c.name}</div><div class="chc">${c.questions.length} 题</div></div><span style="color:var(--primary)">→</span></div>`;
+  }
+  h+=`</div>`;
+  content.innerHTML=h;
+}
+
+function renderBrowse(container){
+  let h=`<div class="data-grid">`;
+  let total=0,types={},correct=0;
+  for(const k in QUESTION_BANK){const c=QUESTION_BANK[k];total+=c.questions.length;
+    c.questions.forEach(q=>{types[q.type]=(types[q.type]||0)+1;if(state.history[q.id]?.correct)correct++})}
+  h+=`<div class="data-card"><div class="dcn">📊 总统计</div><div class="dcd">总题 ${total} | 已答 ${Object.keys(state.history).length} | 正确 ${correct} | 错题 ${state.wrongSet.size}</div><div class="dcs">`;
+  for(const t in types)h+=`${TYPE_LABELS[t]||t}:${types[t]} `;
+  h+=`</div></div>`;
+  for(const k in QUESTION_BANK){const c=QUESTION_BANK[k];
+    const done=c.questions.filter(q=>state.history[q.id]).length;
+    const cr=c.questions.filter(q=>state.history[q.id]?.correct).length;
+    h+=`<div class="data-card" onclick="switchCh('${k}')"><div class="dcn">${c.name}</div><div class="dcd">共 ${c.questions.length} 题</div><div class="dcs">已完成 ${done} 题 | 正确 ${cr} 题</div></div>`;
+  }
+  h+=`</div>`;
+  container.innerHTML=h;
+}
+
+// Init
+loadState();renderStats();
+renderChSelect();
+</script>
+</body>
+</html>
