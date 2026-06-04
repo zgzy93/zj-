@@ -20,7 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .stat-mini .lbl{font-size:10px;color:var(--text-light)}
 .progress-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden}
 .progress-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
-.q-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:10px;touch-action:pan-y;transition:transform .2s,opacity .2s}
+.q-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:10px;touch-action:pan-y;will-change:transform;transition:transform .2s,opacity .2s}
 .q-card.swiping{transition:none;position:relative;z-index:2}
 .q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px}
 .q-number{font-size:11px;color:var(--text-light);font-weight:500}
@@ -586,7 +586,7 @@ document.getElementById("mainContent").addEventListener("touchstart",function(e)
   _swipe.x=e.touches[0].clientX;
   _swipe.y=e.touches[0].clientY;
   _swipe.t=Date.now();
-  _swipe.card=e.target.closest('.q-card');
+  _swipe.card=e.target.closest('.q-card')||document.querySelector('.q-card');
   if(_swipe.card)_swipe.card.style.transition='none';
 },{passive:true});
 
@@ -603,13 +603,48 @@ document.getElementById("mainContent").addEventListener("touchend",function(e){
   const dx=e.changedTouches[0].clientX-_swipe.x;
   const dy=e.changedTouches[0].clientY-_swipe.y;
   const dt=Date.now()-_swipe.t;
-  // 恢复卡片
-  if(_swipe.card){_swipe.card.style.transform='';_swipe.card.style.transition=''}
+  const card=_swipe.card;
   _swipe.x=0;
-  if(dt>400||Math.abs(dx)<50||Math.abs(dy)>Math.abs(dx))return;
-  if(!document.querySelector('.q-card'))return;
-  if(dx>0){const b=document.querySelector('[data-action="prev"]');if(!b?.disabled)go(-1)}
-  else{const b=document.querySelector('[data-action="next"]');if(!b?.disabled)go(1)}
+
+  if(!document.querySelector('.q-card')){
+    if(card){card.style.transform='';card.style.transition=''}
+    return;
+  }
+
+  const isValid=dt<=400&&Math.abs(dx)>=50&&Math.abs(dy)<=Math.abs(dx);
+  if(!isValid){
+    if(card){card.style.transform='';card.style.transition=''}
+    return;
+  }
+
+  const navBtn=dx>0?'prev':'next';
+  const b=document.querySelector('[data-action="'+navBtn+'"]');
+  if(b?.disabled){
+    if(card){card.style.transform='';card.style.transition=''}
+    return;
+  }
+
+  const dir=dx>0?-1:1;
+  const oc=card||document.querySelector('.q-card');
+  if(oc){
+    oc.style.transition='transform .14s ease-in, opacity .14s ease-in';
+    oc.style.transform='translateX('+(dx>0?'120%':'-120%')+')';
+    oc.style.opacity='0.3';
+  }
+
+  setTimeout(function(){
+    go(dir);
+    var nc=document.querySelector('.q-card');
+    if(nc){
+      nc.style.transition='none';
+      nc.style.transform='translateX('+(dx>0?'60%':'-60%')+')';
+      nc.style.opacity='0.3';
+      void nc.offsetHeight;
+      nc.style.transition='transform .25s cubic-bezier(.25,.46,.45,.94), opacity .25s ease-out';
+      nc.style.transform='';
+      nc.style.opacity='';
+    }
+  },150);
 },{passive:true});
 
 // ============================================================
