@@ -133,6 +133,11 @@ a{color:var(--primary);text-decoration:none}
 .nav-page{font-size:13px;color:var(--text-light);text-align:center;min-width:70px;display:inline-flex;align-items:center;gap:4px}
 .jump-input{width:38px;text-align:center;border:1px solid var(--border);border-radius:4px;padding:2px 4px;font-size:13px;outline:none;background:var(--card);color:var(--text);font-weight:600}
 .jump-input:focus{border-color:var(--primary)}
+.type-filter{display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.tf-chip{padding:5px 12px;border-radius:12px;border:1px solid var(--border);background:var(--card);font-size:12px;cursor:pointer;transition:all .1s;font-weight:500;color:var(--text);user-select:none}
+.tf-chip:hover{background:#f9fafb;border-color:#c4b5fd}
+.tf-chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tf-chip.active:hover{background:var(--primary-dark)}
 
 /* 键盘快捷键提示 */
 .kb-bar{text-align:center;margin-top:10px;font-size:11px;color:var(--text-light)}
@@ -225,6 +230,7 @@ let MANIFEST = null;
 
 const TYPE_LABELS={danxuan:"单选题",panduan:"判断题",tiankong:"填空题",jianda:"简答题",jisuan:"计算题"};
 const TYPE_CLASSES={danxuan:"q-type-dx",panduan:"q-type-pd",tiankong:"q-type-tk",jianda:"q-type-jd",jisuan:"q-type-js"};
+const TYPE_ORDER=["danxuan","panduan","tiankong","jianda","jisuan"];
 const LETTERS="ABCDEFGH";
 
 // ============================================================
@@ -234,7 +240,7 @@ let state={
   subjectId:null,
   mode:"subject",chapterId:null,currentIndex:0,answered:false,
   selectedOption:null,wrongSet:new Set(),starredSet:new Set(),history:{},
-  _randomCache:null
+  typeFilter:null,_randomCache:null
 };
 
 // ============================================================
@@ -282,12 +288,16 @@ function getSubjectQ(){
   if(!sub) return r;
   for(const chId in sub)
     sub[chId].questions.forEach(q=>r.push({...q,chId,chName:sub[chId].name,subjectId:state.subjectId}));
+  if(state.typeFilter) return r.filter(q=>state.typeFilter.includes(q.type));
   return r;
 }
 
 function getChQ(chId){
   const ch=QUESTION_BANK[state.subjectId]?.[chId];
-  return ch?ch.questions.map(q=>({...q,chId,chName:ch.name,subjectId:state.subjectId})):[];
+  if(!ch) return [];
+  let qs=ch.questions.map(q=>({...q,chId,chName:ch.name,subjectId:state.subjectId}));
+  if(state.typeFilter) qs=qs.filter(q=>state.typeFilter.includes(q.type));
+  return qs;
 }
 
 function shuffle(a){
@@ -370,7 +380,7 @@ async function switchSubject(subjectId){
   const ct=document.getElementById("mainContent");
   ct.innerHTML='<div class="empty-state"><div class="ei">⏳</div><div class="et">切换科目中...</div></div>';
   state.subjectId=subjectId;
-  state.currentIndex=0;state.answered=false;state.selectedOption=null;
+  state.currentIndex=0;state.answered=false;state.selectedOption=null;state.typeFilter=null;
   state.wrongSet=new Set();state.starredSet=new Set();state.history={};
   loadSubjectPersisted(subjectId);
   try{
@@ -437,6 +447,13 @@ function renderChSelect(){
     <div class="stat-chip"><div class="sc-num">${state.wrongSet.size}</div><div class="sc-lbl">错题</div></div>
     <div class="stat-chip"><div class="sc-num">${state.starredSet.size}</div><div class="sc-lbl">收藏</div></div>
   </div>`;
+  // 题型筛选
+  h+=`<div class="type-filter">`;
+  TYPE_ORDER.forEach(t=>{
+    const active=!state.typeFilter||state.typeFilter.includes(t);
+    h+=`<button class="tf-chip ${active?'active':''}" data-action="tf" data-type="${t}">${TYPE_LABELS[t]}</button>`;
+  });
+  h+=`</div>`;
   h+=`<div class="chapter-grid">`;
   const subj=QUESTION_BANK[state.subjectId];
   if(subj) for(const k in subj){const c=subj[k];
@@ -470,7 +487,7 @@ function render(){
   if(state.mode==="chapter"&&!state.chapterId){renderChSelect();return}
 
   if(qs.length===0){
-    const ms={"wrong":"暂无错题 🎉","starred":"暂无收藏 ⭐","chapter":"该章节暂无题目","all":"暂无题目","random":"暂无题目"};
+    const ms={"wrong":"暂无错题 🎉","starred":"暂无收藏 ⭐","chapter":"该章节暂无题目（可调整题型筛选）","all":"暂无题目（可调整题型筛选）","random":"暂无题目（可调整题型筛选）"};
     setPageTitle("📝 "+state.mode);
     ct.innerHTML=`<div class="empty-state"><div class="ei">📭</div><div class="et">${ms[state.mode]||"暂无题目"}</div></div>`;
     return;
@@ -489,6 +506,13 @@ function render(){
   const isOpen=q.type==="jianda"||q.type==="jisuan";
 
   let h=`<div class="progress-bar"><div class="progress-fill" style="width:${((idx+1)/qs.length*100).toFixed(1)}%"></div></div>`;
+  // 题型筛选
+  h+=`<div class="type-filter" style="margin-bottom:6px">`;
+  TYPE_ORDER.forEach(t=>{
+    const active=!state.typeFilter||state.typeFilter.includes(t);
+    h+=`<button class="tf-chip ${active?'active':''}" data-action="tf" data-type="${t}">${TYPE_LABELS[t]}</button>`;
+  });
+  h+=`</div>`;
   h+=`<div class="q-card" data-qid="${q.id}">`;
   h+=`<div class="q-header">`;
   h+=`<span class="q-number">#${idx+1} / ${qs.length}</span>`;
@@ -608,6 +632,7 @@ document.getElementById("mainContent").addEventListener("click",function(e){
   const action=target.dataset.action;
   const qid=target.dataset.qid;
 
+  if(action==="tf"){toggleTypeFilter(target.dataset.type);return}
   if(action==="pick"){if(state.answered)return;handlePick(qid,target.dataset.opt);}
   else if(action==="star")handleStar(qid);
   else if(action==="fillcheck")handleFillCheck(qid);
@@ -756,6 +781,20 @@ function nextRand(){
   const qs=getSubjectQ();if(!qs.length)return;
   state._randomCache=shuffle(qs);
   state.currentIndex=0;state.answered=false;state.selectedOption=null;render();
+}
+
+function toggleTypeFilter(type){
+  if(!state.typeFilter){
+    state.typeFilter=TYPE_ORDER.filter(t=>t!==type);
+  }else{
+    const idx=state.typeFilter.indexOf(type);
+    if(idx>=0) state.typeFilter=[...state.typeFilter.slice(0,idx),...state.typeFilter.slice(idx+1)];
+    else state.typeFilter=[...state.typeFilter,type];
+    if(state.typeFilter.length===0||state.typeFilter.length===TYPE_ORDER.length) state.typeFilter=null;
+  }
+  state.currentIndex=0;state.answered=false;state.selectedOption=null;
+  if(state.mode==="chapter"&&state.chapterId) render();
+  else renderChSelect();
 }
 
 function switchCh(id){
