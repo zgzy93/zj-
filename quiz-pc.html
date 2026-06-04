@@ -549,9 +549,12 @@ function render(){
     const val=state.answered?state.selectedOption||"":"";
     h+=`<div class="fill-wrap">`;
     h+=`<input class="fill-ipt ${state.answered?(state.selectedOption?'cr':'wr'):''}" id="fi_${q.id}" placeholder="输入答案..." value="${val}" autocomplete="off">`;
-    if(!state.answered)h+=`<button class="fill-btn" data-action="fillcheck" data-qid="${q.id}">↵ 确认</button>`;
+    if(!state.answered){
+      h+=`<button class="fill-btn" data-action="fillcheck" data-qid="${q.id}">↵ 确认</button>`;
+      h+=`<button class="action-btn" data-action="showans" data-qid="${q.id}" style="padding:8px 14px">📌 答案</button>`;
+    }
     h+=`</div>`;
-    if(!state.answered)h+=`<div class="kb-hint">快捷键：<kbd>Enter</kbd> 提交答案</div>`;
+    if(!state.answered)h+=`<div class="kb-hint">快捷键：<kbd>Enter</kbd> 提交，<kbd>Space</kbd> 看答案</div>`;
     if(state.answered){
       h+=`<div class="fill-ans">✅ 正确答案：${q.answer}</div>`;
     }

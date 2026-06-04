@@ -478,7 +478,7 @@ function render(){
   if(isFill){
     const val=state.answered?state.selectedOption||"":"";
     h+=`<input class="fill-ipt ${state.answered?(state.selectedOption?'cr':'wr'):''}" id="fi_${q.id}" placeholder="输入答案..." value="${val}">`;
-    if(!state.answered)h+=`<button class="nav-btn pri" data-action="fillcheck" data-qid="${q.id}" style="padding:8px 16px;flex:none;font-size:12px;display:inline-block">确认</button>`;
+    if(!state.answered)h+=`<div style="display:flex;gap:6px;margin-bottom:6px"><button class="nav-btn pri" data-action="fillcheck" data-qid="${q.id}" style="flex:1;padding:8px 16px;font-size:12px">确认</button><button class="nav-btn" data-action="showans" data-qid="${q.id}" style="flex:1;padding:8px 16px;font-size:12px">查看答案</button></div>`;
     if(state.answered){
       h+=`<div style="font-size:12px;margin-bottom:4px;color:var(--text-light)">正确答案：${q.answer}</div>`;
     }
