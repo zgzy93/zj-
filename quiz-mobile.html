@@ -19,7 +19,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .stat-mini .lbl{font-size:10px;color:var(--text-light)}
 .progress-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden}
 .progress-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
-.q-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:10px}
+.q-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:10px;touch-action:pan-y;transition:transform .2s,opacity .2s}
+.q-card.swiping{transition:none;position:relative;z-index:2}
 .q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px}
 .q-number{font-size:11px;color:var(--text-light);font-weight:500}
 .q-badges{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
@@ -740,6 +741,40 @@ document.addEventListener("keydown",function(e){
     }
   }
 });
+
+// ============================================================
+// 滑动切换（触屏）
+// ============================================================
+let _swipe={x:0,y:0,t:0,card:null};
+document.getElementById("mainContent").addEventListener("touchstart",function(e){
+  if(!document.querySelector('.q-card')){_swipe.x=0;return}
+  _swipe.x=e.touches[0].clientX;
+  _swipe.y=e.touches[0].clientY;
+  _swipe.t=Date.now();
+  _swipe.card=e.target.closest('.q-card');
+  if(_swipe.card)_swipe.card.style.transition='none';
+},{passive:true});
+
+document.getElementById("mainContent").addEventListener("touchmove",function(e){
+  if(!_swipe.x)return;
+  const dx=e.touches[0].clientX-_swipe.x;
+  const dy=e.touches[0].clientY-_swipe.y;
+  if(Math.abs(dy)>Math.abs(dx)*2){_swipe.x=0;return}
+  if(_swipe.card)_swipe.card.style.transform='translateX('+(dx*0.4)+'px)';
+},{passive:true});
+
+document.getElementById("mainContent").addEventListener("touchend",function(e){
+  if(!_swipe.x)return;
+  const dx=e.changedTouches[0].clientX-_swipe.x;
+  const dy=e.changedTouches[0].clientY-_swipe.y;
+  const dt=Date.now()-_swipe.t;
+  if(_swipe.card){_swipe.card.style.transform='';_swipe.card.style.transition=''}
+  _swipe.x=0;
+  if(dt>400||Math.abs(dx)<50||Math.abs(dy)>Math.abs(dx))return;
+  if(!document.querySelector('.q-card'))return;
+  if(dx>0){const b=document.querySelector('[data-action="prev"]');if(!b?.disabled)go(-1)}
+  else{const b=document.querySelector('[data-action="next"]');if(!b?.disabled)go(1)}
+},{passive:true});
 
 // === 操作函数 ===
 function handlePick(qId,opt){
