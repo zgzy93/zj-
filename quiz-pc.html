@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>刷题助手 · PC 多科目</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#4f46e5;--primary-light:#818cf8;--primary-dark:#3730a3;--bg:#f5f6fa;--card:#fff;--text:#1f2937;--text-light:#6b7280;--border:#e2e5ec;--success:#10b981;--danger:#ef4444;--shadow:0 2px 8px rgba(0,0,0,.06);--radius:10px;--nav-h:48px}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+body,p{font-size:15px;line-height:1.7}
+a{color:var(--primary);text-decoration:none}
+
+/* 顶部栏 */
+.top-bar{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.top-left{display:flex;align-items:center;gap:16px}
+.top-left .title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.top-left .title:hover{opacity:.75}
+.top-tabs{display:flex;gap:2px;background:var(--bg);border-radius:6px;padding:2px}
+.top-tab{padding:5px 14px;border-radius:5px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text-light);transition:all .1s}
+.top-tab:hover{color:var(--text)}
+.top-tab.active{background:var(--card);color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.top-right{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--text-light)}
+.top-right .stat-item{display:flex;align-items:center;gap:4px}
+.top-right .stat-num{font-weight:700;color:var(--text)}
+.top-right .stat-num.wrong{color:var(--danger)}
+
+/* 主内容 */
+.main-wrap{flex:1;max-width:880px;width:100%;margin:0 auto;padding:20px 24px 40px}
+
+/* 科目网格 */
+.subject-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:18px}
+.subject-card{padding:20px 18px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px}
+.subject-card:hover{border-color:var(--primary-light);box-shadow:0 4px 12px rgba(79,70,229,.08);transform:translateY(-1px)}
+.subject-card:active{transform:scale(.98)}
+.subject-card .sc-icon{font-size:32px;width:44px;text-align:center}
+.subject-card .sc-info{flex:1;min-width:0}
+.subject-card .sc-name{font-weight:700;font-size:16px;margin-bottom:3px}
+.subject-card .sc-desc{font-size:12px;color:var(--text-light)}
+.subject-card .sc-arrow{font-size:18px;color:var(--text-light)}
+
+/* 章节列表 */
+.chapter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:16px}
+.chapter-card{padding:14px 16px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .12s;display:flex;justify-content:space-between;align-items:center}
+.chapter-card:hover{border-color:var(--primary-light);box-shadow:var(--shadow)}
+.chapter-card .cc-name{font-weight:600;font-size:14px}
+.chapter-card .cc-stat{font-size:12px;color:var(--text-light)}
+
+/* 统计行 */
+.stats-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.stat-chip{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 16px;text-align:center;min-width:72px;box-shadow:var(--shadow)}
+.stat-chip .sc-num{font-size:20px;font-weight:700;color:var(--primary);line-height:1.2}
+.stat-chip .sc-lbl{font-size:11px;color:var(--text-light)}
+
+/* 操作按钮行 */
+.action-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.action-btn{padding:7px 18px;border-radius:6px;border:1px solid var(--border);background:var(--card);font-size:13px;cursor:pointer;color:var(--text);font-weight:500;transition:all .1s}
+.action-btn:hover{background:#f9fafb;border-color:#d1d5db}
+.action-btn.pri{color:var(--primary);border-color:var(--primary-light)}
+.action-btn.pri:hover{background:#eef2ff}
+.action-btn.del{color:var(--danger);border-color:var(--danger)}
+.action-btn.del:hover{background:#fef2f2}
+
+/* 进度条 */
+.progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden}
+.progress-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
+
+/* 题目卡片 */
+.q-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px 28px;margin-bottom:14px}
+.q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.q-number{font-size:12px;color:var(--text-light);font-weight:500}
+.q-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.q-type{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:500}
+.q-type-dx{background:#dbeafe;color:#2563eb}
+.q-type-pd{background:#fef3c7;color:#d97706}
+.q-type-tk{background:#d1fae5;color:#059669}
+.q-type-jd{background:#ede9fe;color:#7c3aed}
+.q-type-js{background:#fce7f3;color:#db2777}
+.q-chapter{font-size:11px;padding:3px 10px;background:#f3f4f6;border-radius:10px;color:var(--text-light)}
+.star-btn{font-size:22px;cursor:pointer;background:none;border:none;padding:2px;line-height:1;transition:transform .1s}
+.star-btn:hover{transform:scale(1.2)}
+.q-text{font-size:15px;line-height:1.9;margin-bottom:14px;white-space:pre-wrap;color:var(--text)}
+
+/* 选择题选项 */
+.options{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.opt{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .1s;background:var(--card);user-select:none}
+.opt:hover{border-color:#c4b5fd;background:#faf5ff}
+.opt.sel{border-color:var(--primary);background:#eef2ff}
+.opt.cr{border-color:var(--success);background:#ecfdf5}
+.opt.wr{border-color:var(--danger);background:#fef2f2}
+.opt.dis{cursor:default;opacity:.9}
+.opt.dis:hover{border-color:var(--border);background:var(--card)}
+.opt .ol{width:28px;height:28px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;color:var(--text-light)}
+.opt.cr .ol{background:var(--success);color:#fff}
+.opt.wr .ol{background:var(--danger);color:#fff}
+.opt.sel .ol{background:var(--primary);color:#fff}
+.opt .ot{font-size:14px;line-height:1.5;padding-top:1px}
+
+/* 快速选择提示 */
+.kb-hint{font-size:11px;color:var(--text-light);margin:-4px 0 8px;display:flex;gap:10px}
+.kb-hint kbd{background:#f3f4f6;border:1px solid var(--border);border-radius:3px;padding:0 6px;font-family:inherit;font-size:11px}
+
+/* 填空题 */
+.fill-wrap{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+.fill-ipt{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;outline:none;transition:border-color .15s;background:var(--card);max-width:360px}
+.fill-ipt:focus{border-color:var(--primary)}
+.fill-ipt.cr{border-color:var(--success);background:#ecfdf5}
+.fill-ipt.wr{border-color:var(--danger);background:#fef2f2}
+.fill-btn{padding:8px 20px;border-radius:6px;background:var(--primary);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .1s}
+.fill-btn:hover{opacity:.85}
+.fill-ans{font-size:13px;color:var(--text-light);margin-top:4px}
+
+/* 简答题答案框 */
+.ans-box{background:#f9fafb;border-radius:8px;padding:14px 16px;margin-top:10px;border-left:3px solid var(--primary);display:none;font-size:14px;line-height:1.8}
+.ans-box.show{display:block}
+.ans-box .albl{font-weight:600;color:var(--primary);font-size:13px;margin-bottom:5px}
+.ans-box .act{white-space:pre-wrap}
+
+/* 结果横幅 */
+.result-banner{padding:10px 14px;border-radius:8px;font-size:14px;font-weight:600;text-align:center;margin-bottom:10px}
+.result-banner.cr{background:#ecfdf5;color:var(--success);border:1px solid #a7f3d0}
+.result-banner.wr{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}
+
+/* 导航栏 */
+.nav-row{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px}
+.nav-btn{padding:9px 22px;border-radius:6px;border:1px solid var(--border);background:var(--card);font-size:13px;font-weight:500;cursor:pointer;transition:all .1s;text-align:center;color:var(--text)}
+.nav-btn:hover{background:#f9fafb;border-color:#d1d5db}
+.nav-btn:disabled{opacity:.3;cursor:default;background:var(--card)}
+.nav-btn.pri{background:var(--primary);color:#fff;border-color:var(--primary)}
+.nav-btn.pri:hover{background:var(--primary-dark)}
+.nav-btn.suc{background:var(--success);color:#fff;border-color:var(--success)}
+.nav-btn.suc:hover{background:#059669}
+.nav-page{font-size:13px;color:var(--text-light);text-align:center;min-width:70px;display:inline-flex;align-items:center;gap:4px}
+.jump-input{width:38px;text-align:center;border:1px solid var(--border);border-radius:4px;padding:2px 4px;font-size:13px;outline:none;background:var(--card);color:var(--text);font-weight:600}
+.jump-input:focus{border-color:var(--primary)}
+
+/* 键盘快捷键提示 */
+.kb-bar{text-align:center;margin-top:10px;font-size:11px;color:var(--text-light)}
+.kb-bar kbd{background:#f3f4f6;border:1px solid var(--border);border-radius:3px;padding:1px 6px;font-family:inherit;font-size:11px;margin:0 1px}
+
+/* 浏览页 */
+.data-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:16px}
+.data-card{padding:14px 16px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;transition:all .12s}
+.data-card:hover{border-color:var(--primary-light);box-shadow:var(--shadow)}
+.data-card .dc-title{font-weight:600;font-size:14px;margin-bottom:3px}
+.data-card .dc-desc{font-size:12px;color:var(--text-light)}
+.data-card .dc-sub{font-size:12px;color:var(--primary);font-weight:500;margin-top:3px}
+
+/* 空状态 */
+.empty-state{padding:50px 20px;text-align:center;color:var(--text-light)}
+.empty-state .ei{font-size:48px;margin-bottom:10px}
+.empty-state .et{font-size:15px}
+
+/* 弹窗 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--card);border-radius:var(--radius);padding:24px;max-width:360px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.modal-box h3{font-size:16px;margin-bottom:8px}
+.modal-box p{font-size:13px;color:var(--text-light);margin-bottom:18px;line-height:1.6}
+.modal-btns{display:flex;gap:8px}
+.modal-btns button{flex:1;padding:9px;border-radius:6px;border:1px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;background:var(--card);transition:all .1s}
+.modal-btns button:hover{background:#f9fafb}
+.modal-btns .confirm{background:var(--danger);color:#fff;border-color:var(--danger)}
+.modal-btns .confirm:hover{background:#dc2626}
+
+/* Toast */
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.78);color:#fff;padding:14px 24px;border-radius:8px;font-size:14px;z-index:300;pointer-events:none;opacity:0;transition:opacity .25s}
+.toast.show{opacity:1}
+
+/* 响应式 */
+@media(max-width:640px){.main-wrap{padding:12px 14px 32px}.subject-grid{grid-template-columns:1fr}.chapter-grid{grid-template-columns:1fr}.data-grid{grid-template-columns:1fr}.top-bar{padding:0 12px}.top-tab{padding:4px 10px;font-size:12px}.top-right{display:none}}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-left">
+    <div class="title" id="topBarTitle">
+      <span id="titleIcon">📚</span>
+      <span id="pageTitle">刷题助手</span>
+    </div>
+    <div class="top-tabs" id="topTabs">
+      <button class="top-tab active" data-mode="subject">📂 科目</button>
+      <button class="top-tab" data-mode="chapter">📖 章节</button>
+      <button class="top-tab" data-mode="all">📝 全部</button>
+      <button class="top-tab" data-mode="random">🎲 随机</button>
+      <button class="top-tab" data-mode="wrong">❌ 错题</button>
+      <button class="top-tab" data-mode="starred">⭐ 收藏</button>
+      <button class="top-tab" data-mode="browse">🔍 题库</button>
+    </div>
+  </div>
+  <div class="top-right">
+    <span class="stat-item">📊 <span class="stat-num" id="statProg">0/0</span></span>
+    <span class="stat-item">❌ <span class="stat-num wrong" id="statWrong">0</span></span>
+  </div>
+</div>
+
+<div class="main-wrap" id="mainContent"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <h3 id="modalTitle">确认</h3>
+    <p id="modalText">确定要执行此操作吗？</p>
+    <div class="modal-btns">
+      <button onclick="closeModal()">取消</button>
+      <button class="confirm" id="modalConfirmBtn" onclick="closeModal()">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// manifest — 科目与章节清单
+// 与 index.html / quiz-mobile.html 共用 data/*.js 题库文件
+// ============================================================
+const _MANIFEST_DATA={"subjects":[{"id":"jz","name":"计算机组成原理","icon":"🖥️","chapters":[{"id":"ch1","name":"第一章 计算机系统概述"},{"id":"ch2","name":"第二/三章 数据表示与运算"},{"id":"ch3","name":"第四章 存储系统"},{"id":"ch4","name":"第五章 指令系统"}]}]};
+
+// ============================================================
+// 题库数据 — 通过 <script> 标签动态载入 data/*.js
+// ============================================================
+let QUESTION_BANK = {};   // { subjectId: { chapterId: { id,name,questions } } }
+let MANIFEST = null;
+
+const TYPE_LABELS={danxuan:"单选题",panduan:"判断题",tiankong:"填空题",jianda:"简答题",jisuan:"计算题"};
+const TYPE_CLASSES={danxuan:"q-type-dx",panduan:"q-type-pd",tiankong:"q-type-tk",jianda:"q-type-jd",jisuan:"q-type-js"};
+const LETTERS="ABCDEFGH";
+
+// ============================================================
+// 状态
+// ============================================================
+let state={
+  subjectId:null,
+  mode:"subject",chapterId:null,currentIndex:0,answered:false,
+  selectedOption:null,wrongSet:new Set(),starredSet:new Set(),history:{},
+  _randomCache:null
+};
+
+// ============================================================
+// localStorage —— 独立于 index.html（键前缀 pc_）
+// ============================================================
+const LAST_SUBJECT_KEY="pc_last_sub";
+
+function loadSubjectPersisted(subjectId){
+  if(!subjectId) return;
+  try{
+    const w=localStorage.getItem("pcw_"+subjectId);if(w)state.wrongSet=new Set(JSON.parse(w));
+    const s=localStorage.getItem("pcs_"+subjectId);if(s)state.starredSet=new Set(JSON.parse(s));
+    const h=localStorage.getItem("pch_"+subjectId);if(h)state.history=JSON.parse(h);
+  }catch(e){}
+}
+
+function saveSubjectPersisted(){
+  if(!state.subjectId) return;
+  try{
+    localStorage.setItem("pcw_"+state.subjectId,JSON.stringify([...state.wrongSet]));
+    localStorage.setItem("pcs_"+state.subjectId,JSON.stringify([...state.starredSet]));
+    localStorage.setItem("pch_"+state.subjectId,JSON.stringify(state.history));
+    localStorage.setItem(LAST_SUBJECT_KEY,state.subjectId);
+  }catch(e){}
+}
+
+function clearHistory(){
+  state.history={};
+  if(state.subjectId) localStorage.removeItem("pch_"+state.subjectId);
+}
+
+function clearAllData(){
+  state.wrongSet.clear();state.starredSet.clear();state.history={};
+  if(!state.subjectId) return;
+  localStorage.removeItem("pcw_"+state.subjectId);
+  localStorage.removeItem("pcs_"+state.subjectId);
+  localStorage.removeItem("pch_"+state.subjectId);
+}
+
+// ============================================================
+// 工具函数
+// ============================================================
+function getSubjectQ(){
+  const r=[],sub=QUESTION_BANK[state.subjectId];
+  if(!sub) return r;
+  for(const chId in sub)
+    sub[chId].questions.forEach(q=>r.push({...q,chId,chName:sub[chId].name,subjectId:state.subjectId}));
+  return r;
+}
+
+function getChQ(chId){
+  const ch=QUESTION_BANK[state.subjectId]?.[chId];
+  return ch?ch.questions.map(q=>({...q,chId,chName:ch.name,subjectId:state.subjectId})):[];
+}
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){const j=Math.random()*i|0;[a[i],a[j]]=[a[j],a[i]]}
+  return a;
+}
+
+function getCurQ(){
+  switch(state.mode){
+    case"chapter":return getChQ(state.chapterId);
+    case"all":return getSubjectQ();
+    case"random":
+      if(!state._randomCache||!state._randomCache.length)state._randomCache=shuffle(getSubjectQ());
+      return state._randomCache;
+    case"wrong":return getSubjectQ().filter(q=>state.wrongSet.has(q.id));
+    case"starred":return getSubjectQ().filter(q=>state.starredSet.has(q.id));
+    default:return getChQ(state.chapterId);
+  }
+}
+
+function findQ(qId){
+  return getCurQ().find(q=>q.id===qId);
+}
+
+function getCurrentSubject(){
+  return MANIFEST?MANIFEST.subjects.find(s=>s.id===state.subjectId):null;
+}
+
+function getSubjectStats(subjectId){
+  let wrong=0,answered=0;
+  try{
+    const w=localStorage.getItem("pcw_"+subjectId);if(w)wrong=JSON.parse(w).length;
+    const h=localStorage.getItem("pch_"+subjectId);if(h)answered=Object.keys(JSON.parse(h)).length;
+  }catch(e){}
+  let total=0;
+  if(QUESTION_BANK[subjectId])
+    for(const chId in QUESTION_BANK[subjectId]) total+=QUESTION_BANK[subjectId][chId].questions.length;
+  return{total,answered,wrong};
+}
+
+function setPageTitle(text){
+  document.getElementById("pageTitle").textContent=text;
+}
+
+// ============================================================
+// 数据加载 — 使用 <script> 标签载入 JS 数据文件（兼容 file://）
+// ============================================================
+window._QDATA=function(subjectId,chapterId,data){
+  if(!QUESTION_BANK[subjectId]) QUESTION_BANK[subjectId]={};
+  QUESTION_BANK[subjectId][chapterId]=data;
+};
+
+function loadSubjectData(subjectId,chapters){
+  return new Promise((resolve,reject)=>{
+    let remaining=chapters.length;
+    if(!remaining){resolve();return}
+    chapters.forEach(ch=>{
+      const s=document.createElement('script');
+      s.src="data/"+subjectId+"_"+ch.id+".js?_t="+Date.now();
+      s.onload=()=>{if(--remaining===0)resolve()};
+      s.onerror=()=>reject(new Error("加载失败: "+subjectId+"_"+ch.id+".js"));
+      document.head.appendChild(s);
+    });
+  });
+}
+
+async function ensureSubjectLoaded(subjectId){
+  if(QUESTION_BANK[subjectId]) return;
+  const subject=MANIFEST.subjects.find(s=>s.id===subjectId);
+  if(!subject) throw new Error("Unknown subject: "+subjectId);
+  await loadSubjectData(subjectId,subject.chapters);
+}
+
+// ============================================================
+// 科目切换
+// ============================================================
+async function switchSubject(subjectId){
+  if(subjectId===state.subjectId&&QUESTION_BANK[subjectId]) return;
+  saveSubjectPersisted();
+  const ct=document.getElementById("mainContent");
+  ct.innerHTML='<div class="empty-state"><div class="ei">⏳</div><div class="et">切换科目中...</div></div>';
+  state.subjectId=subjectId;
+  state.currentIndex=0;state.answered=false;state.selectedOption=null;
+  state.wrongSet=new Set();state.starredSet=new Set();state.history={};
+  loadSubjectPersisted(subjectId);
+  try{
+    await ensureSubjectLoaded(subjectId);
+    state.mode="chapter";
+    state.chapterId=MANIFEST.subjects.find(s=>s.id===subjectId).chapters[0].id;
+    const sub=getCurrentSubject();
+    document.getElementById("titleIcon").textContent=sub.icon||"📚";
+    renderChSelect();
+  }catch(e){
+    ct.innerHTML='<div class="empty-state"><div class="ei">⚠️</div><div class="et">科目数据加载失败，请重试。</div></div>';
+  }
+}
+
+// ============================================================
+// 渲染函数
+// ============================================================
+
+// ---- 科目选择页 ----
+function renderSubjectSelect(){
+  state.mode="subject";
+  setPageTitle("选择科目");
+  document.getElementById("titleIcon").textContent="📚";
+  activateTab("subject");
+  const ct=document.getElementById("mainContent");
+  let h=`<div class="stats-bar">`;
+  MANIFEST.subjects.forEach(sub=>{
+    const s=getSubjectStats(sub.id);
+    h+=`<div class="stat-chip"><div class="sc-num">${s.total||"?"}</div><div class="sc-lbl">${sub.name.slice(0,6)}</div></div>`;
+  });
+  h+=`</div><div class="subject-grid">`;
+  MANIFEST.subjects.forEach(sub=>{
+    const s=getSubjectStats(sub.id);
+    let desc=`已答 ${s.answered} 题`;
+    if(s.total) desc=`共 ${s.total} 题 · `+desc;
+    if(s.wrong) desc+=` · ❌ ${s.wrong}`;
+    h+=`<div class="subject-card" data-subject="${sub.id}">
+      <span class="sc-icon">${sub.icon||"📚"}</span>
+      <div class="sc-info">
+        <div class="sc-name">${sub.name}</div>
+        <div class="sc-desc">${desc}</div>
+      </div>
+      <span class="sc-arrow">→</span>
+    </div>`;
+  });
+  h+=`</div>`;
+  ct.innerHTML=h;
+  updateStatsAndNav();
+}
+
+// ---- 章节选择页 ----
+function renderChSelect(){
+  state.mode="chapter";
+  const sub=getCurrentSubject();
+  setPageTitle(sub?sub.name:"选择科目");
+  document.getElementById("titleIcon").textContent=sub?sub.icon||"📚":"📚";
+  activateTab("chapter");
+  const ct=document.getElementById("mainContent");
+  const qs=getSubjectQ();
+  const done=Object.keys(state.history).length;
+  let h=`<div class="stats-bar">
+    <div class="stat-chip"><div class="sc-num">${qs.length}</div><div class="sc-lbl">总题</div></div>
+    <div class="stat-chip"><div class="sc-num">${done}</div><div class="sc-lbl">已答</div></div>
+    <div class="stat-chip"><div class="sc-num">${state.wrongSet.size}</div><div class="sc-lbl">错题</div></div>
+    <div class="stat-chip"><div class="sc-num">${state.starredSet.size}</div><div class="sc-lbl">收藏</div></div>
+  </div>`;
+  h+=`<div class="chapter-grid">`;
+  const subj=QUESTION_BANK[state.subjectId];
+  if(subj) for(const k in subj){const c=subj[k];
+    const d=c.questions.filter(q=>state.history[q.id]).length;
+    h+=`<div class="chapter-card" data-ch="${k}"><div><div class="cc-name">${c.name}</div><div class="cc-stat">${c.questions.length} 题 · 已答 ${d} 题</div></div><span style="color:var(--primary);font-size:16px">→</span></div>`;
+  }
+  h+=`</div><div class="action-bar">`;
+  h+=`<button class="action-btn" data-action="sw-subject">📂 切换科目</button>`;
+  h+=`<button class="action-btn pri" data-action="sw-starred">⭐ 收藏 (${state.starredSet.size})</button>`;
+  h+=`<button class="action-btn" data-action="sw-clear">📋 清空记录</button>`;
+  h+=`<button class="action-btn del" data-action="sw-reset">⚠️ 重置所有</button></div>`;
+  ct.innerHTML=h;
+  updateStatsAndNav();
+}
+
+// ---- 顶部标签激活 ----
+function activateTab(mode){
+  document.querySelectorAll(".top-tab").forEach(el=>{
+    el.classList.toggle("active",el.dataset.mode===mode);
+  });
+}
+
+// ---- 刷题渲染 ----
+function render(){
+  updateStatsAndNav();
+  const qs=getCurQ();
+  const ct=document.getElementById("mainContent");
+
+  if(state.mode==="browse"){setPageTitle("题库浏览");activateTab("browse");renderBrowse(ct);return}
+  if(state.mode==="subject"){renderSubjectSelect();return}
+  if(state.mode==="chapter"&&!state.chapterId){renderChSelect();return}
+
+  if(qs.length===0){
+    const ms={"wrong":"暂无错题 🎉","starred":"暂无收藏 ⭐","chapter":"该章节暂无题目","all":"暂无题目","random":"暂无题目"};
+    setPageTitle("📝 "+state.mode);
+    ct.innerHTML=`<div class="empty-state"><div class="ei">📭</div><div class="et">${ms[state.mode]||"暂无题目"}</div></div>`;
+    return;
+  }
+
+  const idx=Math.min(state.currentIndex,qs.length-1);
+  const q=qs[idx];
+  if(!q)return;
+
+  const titles={chapter:"📖 "+q.chName,all:"📝 全部题目",random:"🎲 随机刷题",wrong:"❌ 错题本",starred:"⭐ 收藏"};
+  setPageTitle(titles[state.mode]||"刷题");
+  activateTab(state.mode==="chapter"?"chapter":state.mode);
+
+  const isChoice=q.type==="danxuan"||q.type==="panduan";
+  const isFill=q.type==="tiankong";
+  const isOpen=q.type==="jianda"||q.type==="jisuan";
+
+  let h=`<div class="progress-bar"><div class="progress-fill" style="width:${((idx+1)/qs.length*100).toFixed(1)}%"></div></div>`;
+  h+=`<div class="q-card" data-qid="${q.id}">`;
+  h+=`<div class="q-header">`;
+  h+=`<span class="q-number">#${idx+1} / ${qs.length}</span>`;
+  h+=`<div class="q-badges">`;
+  if(q.chName)h+=`<span class="q-chapter">${q.chName}</span>`;
+  h+=`<span class="q-type ${TYPE_CLASSES[q.type]}">${TYPE_LABELS[q.type]||q.type}</span>`;
+  const starred=state.starredSet.has(q.id);
+  h+=`<button class="star-btn" data-action="star" data-qid="${q.id}">${starred?'⭐':'☆'}</button>`;
+  h+=`</div></div>`;
+  h+=`<div class="q-text">${q.question}</div>`;
+
+  if(isChoice){
+    h+=`<div class="kb-hint">快捷键：<kbd>1</kbd>~<kbd>${LETTERS[q.options.length-1]}</kbd> 选择 · <kbd>Enter</kbd> 确认</div>`;
+    h+=`<div class="options">`;
+    q.options.forEach((opt,oi)=>{
+      const lt=LETTERS[oi];
+      let cls="opt";
+      if(state.answered){
+        cls+=" dis";
+        if(lt===q.answer)cls+=" cr";
+        else if(lt===state.selectedOption)cls+=" wr";
+      }else if(lt===state.selectedOption)cls+=" sel";
+      h+=`<div class="${cls}" data-action="pick" data-qid="${q.id}" data-opt="${lt}">`;
+      h+=`<span class="ol">${lt}</span><span class="ot">${opt.replace(/^[A-Z]\.\s*/,'')}</span></div>`;
+    });
+    h+=`</div>`;
+    if(state.answered){
+      const cr=state.selectedOption===q.answer;
+      h+=`<div class="result-banner ${cr?'cr':'wr'}">${cr?'✅ 正确！':'❌ 错误，正确答案：'+q.answer}</div>`;
+    }
+  }
+
+  if(isFill){
+    const val=state.answered?state.selectedOption||"":"";
+    h+=`<div class="fill-wrap">`;
+    h+=`<input class="fill-ipt ${state.answered?(state.selectedOption?'cr':'wr'):''}" id="fi_${q.id}" placeholder="输入答案..." value="${val}" autocomplete="off">`;
+    if(!state.answered)h+=`<button class="fill-btn" data-action="fillcheck" data-qid="${q.id}">↵ 确认</button>`;
+    h+=`</div>`;
+    if(!state.answered)h+=`<div class="kb-hint">快捷键：<kbd>Enter</kbd> 提交答案</div>`;
+    if(state.answered){
+      h+=`<div class="fill-ans">✅ 正确答案：${q.answer}</div>`;
+    }
+  }
+
+  if(isOpen){
+    const show=state.answered?"show":"";
+    if(!state.answered)h+=`<div class="kb-hint">快捷键：<kbd>Space</kbd> 查看答案</div>`;
+    if(!state.answered)h+=`<button class="fill-btn" data-action="showans" data-qid="${q.id}">📌 查看答案</button>`;
+    h+=`<div class="ans-box ${show}" id="abox_${q.id}"><div class="albl">📌 参考答案</div><div class="act">${q.answer}</div></div>`;
+  }
+
+  h+=`</div>`;
+
+  h+=`<div class="nav-row">`;
+  h+=`<button class="nav-btn" data-action="prev" ${idx===0?'disabled':''}>◀ 上一题</button>`;
+  h+=`<span class="nav-page"><input type="number" class="jump-input" id="jumpInput" value="${idx+1}" min="1" max="${qs.length}" title="输入题号后按回车跳转"> / ${qs.length}</span>`;
+  h+=`<button class="nav-btn" data-action="next" ${idx>=qs.length-1?'disabled':''}>下一题 ▶</button>`;
+  h+=`</div>`;
+  if(state.mode==="random")h+=`<div class="nav-row"><button class="nav-btn suc" data-action="randnext">🎲 下一道随机</button></div>`;
+
+  h+=`<div class="kb-bar">键盘快捷键：<kbd>←</kbd> <kbd>→</kbd> 翻题 · <kbd>1</kbd>~<kbd>4</kbd> 选选项 · <kbd>Enter</kbd> 确认/提交 · <kbd>S</kbd> 收藏 · <kbd>R</kbd> 随机 · <kbd>Space</kbd> 看答案</div>`;
+
+  ct.innerHTML=h;
+
+  if(isFill&&!state.answered){
+    const inp=document.getElementById("fi_"+q.id);
+    if(inp)setTimeout(()=>inp.focus(),100);
+  }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function updateStatsAndNav(){
+  const all=getSubjectQ();
+  const done=Object.keys(state.history).length;
+  document.getElementById("statProg").textContent=done+"/"+all.length;
+  document.getElementById("statWrong").textContent=state.wrongSet.size;
+}
+
+// ============================================================
+// 事件：顶部标题点击 → 回到科目选择
+// ============================================================
+document.getElementById("topBarTitle").addEventListener("click",function(){
+  if(state.mode!=="subject"&&MANIFEST) renderSubjectSelect();
+});
+
+// ============================================================
+// 事件：顶部标签切换
+// ============================================================
+document.getElementById("topTabs").addEventListener("click",function(e){
+  const tab=e.target.closest(".top-tab");if(!tab)return;
+  const mode=tab.dataset.mode;
+  if(mode==="subject"){if(MANIFEST)renderSubjectSelect();return}
+  if(mode==="chapter"){state.mode="chapter";renderChSelect();return}
+  if(mode==="browse"){state.mode="browse";render();return}
+  state.mode=mode;state.currentIndex=0;state.answered=false;state.selectedOption=null;state._randomCache=null;render();
+});
+
+// ============================================================
+// 事件：主内容区域事件委托
+// ============================================================
+document.getElementById("mainContent").addEventListener("click",function(e){
+  // 科目卡片
+  const sub=e.target.closest(".subject-card");
+  if(sub&&sub.dataset.subject){switchSubject(sub.dataset.subject);return}
+
+  // 章节卡片
+  const ch=e.target.closest(".chapter-card");
+  if(ch&&ch.dataset.ch){switchCh(ch.dataset.ch);return}
+
+  // 浏览页的章节卡片
+  const dc=e.target.closest(".data-card[data-ch]");
+  if(dc&&dc.dataset.ch){switchCh(dc.dataset.ch);return}
+
+  // data-action 控件
+  const target=e.target.closest("[data-action]");
+  if(!target)return;
+  const action=target.dataset.action;
+  const qid=target.dataset.qid;
+
+  if(action==="pick"){if(state.answered)return;handlePick(qid,target.dataset.opt);}
+  else if(action==="star")handleStar(qid);
+  else if(action==="fillcheck")handleFillCheck(qid);
+  else if(action==="showans")handleShowAns(qid);
+  else if(action==="prev")go(-1);
+  else if(action==="next")go(1);
+  else if(action==="randnext")nextRand();
+
+  else if(action==="sw-starred"){state.mode="starred";state.currentIndex=0;state.answered=false;state.selectedOption=null;render();}
+  else if(action==="sw-subject"){if(MANIFEST)renderSubjectSelect();}
+  else if(action==="sw-clear")showClearConfirm();
+  else if(action==="sw-reset")showResetConfirm();
+});
+
+// ============================================================
+// 键盘快捷键
+// ============================================================
+document.addEventListener("keydown",function(e){
+  // 忽略输入框中的快捷键
+  const tag=document.activeElement?.tagName;
+  const isInput=tag==="INPUT"||tag==="TEXTAREA";
+
+  // Enter 提交填空题 / 跳转题号
+  if(e.key==="Enter"&&isInput){
+    const a=document.activeElement;
+    if(a&&a.classList.contains("fill-ipt")){
+      const qid=a.id.replace("fi_","");
+      if(qid)handleFillCheck(qid);
+    }
+    if(a&&a.classList.contains("jump-input")){
+      const v=parseInt(a.value);
+      if(v>0&&v<=getCurQ().length) jumpTo(v);
+    }
+    return;
+  }
+
+  // 如果正在输入，不要拦截其他键
+  if(isInput) return;
+
+  // 只在答题模式中处理快捷键
+  const qs=getCurQ();
+  if(!qs.length) return;
+
+  const q = qs[state.currentIndex];
+  if(!q) return;
+
+  switch(e.key){
+    case "ArrowLeft":  // ← 上一题
+      e.preventDefault();
+      if(!document.querySelector('[data-action="prev"]')?.disabled) go(-1);
+      break;
+    case "ArrowRight": // → 下一题
+      e.preventDefault();
+      if(!document.querySelector('[data-action="next"]')?.disabled) go(1);
+      break;
+    case " ":  // Space 查看答案
+      e.preventDefault();
+      if(!state.answered) handleShowAns(q?.id);
+      break;
+    case "s": case "S": // 收藏/取消收藏
+      e.preventDefault();
+      handleStar(q?.id);
+      break;
+    case "r": case "R": // 随机
+      e.preventDefault();
+      state.mode="random";state.currentIndex=0;state.answered=false;
+      state.selectedOption=null;state._randomCache=null;render();
+      break;
+  }
+
+  // 数字/字母选选项
+  if(!state.answered && q && (q.type==="danxuan"||q.type==="panduan")){
+    let idx= -1;
+    if(e.key>="1"&&e.key<="9") idx=parseInt(e.key)-1;
+    else if(e.key>="a"&&e.key<="z") idx=e.key.charCodeAt(0)-97;
+    else if(e.key>="A"&&e.key<="Z") idx=e.key.charCodeAt(0)-65;
+
+    // Enter 确认选择
+    if(e.key==="Enter" && state.selectedOption && q){
+      handlePick(q.id, state.selectedOption);
+      return;
+    }
+
+    if(idx>=0 && idx<q.options.length && !state.answered && q){
+      e.preventDefault();
+      const lt=LETTERS[idx];
+      if(lt===state.selectedOption){
+        // 双击同一个选项 → 确认
+        handlePick(q.id, lt);
+      }else{
+        state.selectedOption=lt;
+        render();
+      }
+    }
+  }
+});
+
+// ============================================================
+// 操作函数
+// ============================================================
+function handlePick(qId,opt){
+  const q=findQ(qId);if(!q)return;
+  if(state.answered)return;
+  state.selectedOption=opt;state.answered=true;
+  const cr=opt===q.answer;
+  state.history[q.id]={correct:cr,count:(state.history[q.id]?.count||0)+1};
+  if(cr)state.wrongSet.delete(q.id);else state.wrongSet.add(q.id);
+  saveSubjectPersisted();render();
+}
+
+function handleStar(qId){
+  if(state.starredSet.has(qId))state.starredSet.delete(qId);else state.starredSet.add(qId);
+  saveSubjectPersisted();render();
+}
+
+function handleFillCheck(qId){
+  if(state.answered)return;
+  const inp=document.getElementById("fi_"+qId);if(!inp)return;
+  const v=inp.value.trim();if(!v)return;
+  const q=findQ(qId);if(!q)return;
+  state.answered=true;state.selectedOption=v;
+  const n=s=>s.replace(/[\s,，、]/g,"").toLowerCase();
+  const nv=n(v);
+  const cr=nv===n(q.answer)||q.answer.split(/[,，]/).some(a=>nv.includes(n(a)));
+  state.history[q.id]={correct:cr,count:(state.history[q.id]?.count||0)+1};
+  if(cr)state.wrongSet.delete(q.id);else state.wrongSet.add(q.id);
+  saveSubjectPersisted();render();
+}
+
+function handleShowAns(qId){
+  state.answered=true;
+  render();
+}
+
+function go(d){
+  const qs=getCurQ();const ni=state.currentIndex+d;
+  if(ni<0||ni>=qs.length)return;
+  state.currentIndex=ni;state.answered=false;state.selectedOption=null;render();
+}
+
+function jumpTo(n){
+  state.currentIndex=n-1;state.answered=false;state.selectedOption=null;render();
+}
+
+function nextRand(){
+  const qs=getSubjectQ();if(!qs.length)return;
+  state._randomCache=shuffle(qs);
+  state.currentIndex=0;state.answered=false;state.selectedOption=null;render();
+}
+
+function switchCh(id){
+  state.chapterId=id;state.mode="chapter";state.currentIndex=0;state.answered=false;state.selectedOption=null;render();
+}
+
+// ============================================================
+// 浏览页
+// ============================================================
+function renderBrowse(container){
+  const subj=QUESTION_BANK[state.subjectId];
+  if(!subj){container.innerHTML='<div class="empty-state"><div class="ei">📭</div><div class="et">请先选择一个科目</div></div>';return}
+  let h=`<div class="stats-bar">`,t=0,cats={},cr=0;
+  for(const k in subj){const c=subj[k];t+=c.questions.length;
+    c.questions.forEach(q=>{cats[q.type]=(cats[q.type]||0)+1;if(state.history[q.id]?.correct)cr++})}
+  h+=`<div class="stat-chip"><div class="sc-num">${t}</div><div class="sc-lbl">总题</div></div>
+    <div class="stat-chip"><div class="sc-num">${Object.keys(state.history).length}</div><div class="sc-lbl">已答</div></div>
+    <div class="stat-chip"><div class="sc-num">${cr}</div><div class="sc-lbl">正确</div></div>
+    <div class="stat-chip"><div class="sc-num">${state.wrongSet.size}</div><div class="sc-lbl">错题</div></div>`;
+  h+=`<div class="stat-chip"><div class="sc-lbl">`;
+  for(const t in cats)h+=`${TYPE_LABELS[t]||t}:${cats[t]} `;
+  h+=`</div></div></div><div class="data-grid">`;
+  for(const k in subj){const c=subj[k];
+    const d=c.questions.filter(q=>state.history[q.id]).length;
+    const r=c.questions.filter(q=>state.history[q.id]?.correct).length;
+    h+=`<div class="data-card" data-ch="${k}"><div class="dc-title">${c.name}</div><div class="dc-desc">共 ${c.questions.length} 题</div><div class="dc-sub">✅${r} ❌${d-r} 📊${d}/${c.questions.length}</div></div>`;
+  }
+  h+=`</div><div class="action-bar">`;
+  h+=`<button class="action-btn pri" data-action="sw-starred">⭐ 收藏 (${state.starredSet.size})</button>`;
+  h+=`<button class="action-btn" data-action="sw-subject">📂 切换科目</button>`;
+  h+=`<button class="action-btn del" data-action="sw-clear">🗑 清空学习数据</button></div>`;
+  container.innerHTML=h;
+}
+
+// ============================================================
+// 弹窗
+// ============================================================
+function showClearConfirm(){
+  document.getElementById("modalTitle").textContent="🗑 清空答题记录";
+  document.getElementById("modalText").textContent="确定要清空答题记录吗？（仅清除已答记录，错题本和收藏题目不会受影响）";
+  document.getElementById("modalConfirmBtn").onclick=function(){clearHistory();closeModal();showToast("✅ 已清空答题记录");render();};
+  document.getElementById("modalOverlay").classList.add("show");
+}
+function showResetConfirm(){
+  document.getElementById("modalTitle").textContent="⚠️ 重置所有数据";
+  document.getElementById("modalText").textContent="确定要重置所有数据吗？（答题记录、错题本、收藏将全部删除，不可恢复）";
+  document.getElementById("modalConfirmBtn").onclick=function(){clearAllData();closeModal();showToast("✅ 已重置所有数据");render();};
+  document.getElementById("modalOverlay").classList.add("show");
+}
+function closeModal(){document.getElementById("modalOverlay").classList.remove("show");}
+function showToast(m){
+  const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");
+  clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove("show"),1500);
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+async function init(){
+  try{
+    const last=localStorage.getItem(LAST_SUBJECT_KEY);
+    if(last) state.subjectId=last;
+  }catch(e){}
+
+  const ct=document.getElementById("mainContent");
+  ct.innerHTML='<div class="empty-state"><div class="ei">⏳</div><div class="et">加载中...</div></div>';
+
+  try{
+    MANIFEST=_MANIFEST_DATA;
+
+    if(state.subjectId&&!MANIFEST.subjects.some(s=>s.id===state.subjectId))
+      state.subjectId=null;
+
+    if(!state.subjectId){
+      if(MANIFEST.subjects.length===1){
+        state.subjectId=MANIFEST.subjects[0].id;
+      }else{
+        renderSubjectSelect();
+        updateStatsAndNav();
+        return;
+      }
+    }
+
+    loadSubjectPersisted(state.subjectId);
+    await ensureSubjectLoaded(state.subjectId);
+    const sub=getCurrentSubject();
+    document.getElementById("titleIcon").textContent=sub.icon||"📚";
+    state.chapterId=sub.chapters[0].id;
+    renderChSelect();
+  }catch(e){
+    ct.innerHTML='<div class="empty-state"><div class="ei">⚠️</div><div class="et">题库加载失败，请检查 data/ 目录是否完整后刷新重试。</div></div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
