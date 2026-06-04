@@ -3,3 +3,6 @@ data/raw/
 
 # 数据提取脚本（本地工具）
 extract_data.py
+
+# 聊天记录（本地备份）
+聊天记录_*.md
