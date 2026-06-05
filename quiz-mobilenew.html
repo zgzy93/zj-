@@ -31,6 +31,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .q-type-tk{background:#d1fae5;color:#059669}
 .q-type-jd{background:#ede9fe;color:#7c3aed}
 .q-type-js{background:#fce7f3;color:#db2777}
+.q-type-dm{background:#cffafe;color:#0891b2}
 .q-chapter{font-size:10px;padding:2px 7px;background:#f3f4f6;border-radius:9px;color:var(--text-light)}
 .star-btn{font-size:20px;line-height:1;cursor:pointer;background:none;border:none;padding:2px}
 .q-text{font-size:14px;line-height:1.8;margin-bottom:12px;white-space:pre-wrap;color:var(--text)}
@@ -44,6 +45,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 .opt .lt{width:24px;height:24px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0}
 .opt.cr .lt{background:var(--success);color:#fff}
 .opt.wr .lt{background:var(--danger);color:#fff}
+.opt.ms{border-color:#f59e0b;background:#fffbeb;cursor:default}
+.opt.ms .lt{background:#f59e0b;color:#fff}
+.opt .ck{display:none;margin-left:auto;color:var(--primary);font-size:16px;font-weight:700}
+.opt.sel .ck{display:block}
 .opt.sel .lt{background:var(--primary);color:#fff}
 .opt .tx{font-size:13px;line-height:1.5;padding-top:2px;flex:1}
 .fill-ipt{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;transition:border-color .15s;margin-bottom:8px;background:var(--card)}
@@ -162,7 +167,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei
 // manifest — 科目与章节清单（体积小，直接内嵌）
 // 添加新科目：在这里加条目 + data/<id>_ch?.js 文件即可
 // ============================================================
-const _MANIFEST_DATA={"subjects":[{"id":"jz","name":"计算机组成原理","icon":"🖥️","chapters":[{"id":"ch1","name":"第一章 计算机系统概述"},{"id":"ch2","name":"第二/三章 数据表示与运算"},{"id":"ch3","name":"第四章 存储系统"},{"id":"ch4","name":"第五章 指令系统"}]}]};
+const _MANIFEST_DATA={"subjects":[{"id":"jz","name":"计算机组成原理","icon":"🖥️","chapters":[{"id":"ch1","name":"第一章 计算机系统概述"},{"id":"ch2","name":"第二/三章 数据表示与运算"},{"id":"ch3","name":"第四章 存储系统"},{"id":"ch4","name":"第五章 指令系统"}]},{"id":"hd","name":"Hadoop","icon":"🐘","chapters":[{"id":"ch1","name":"Hadoop 综合题库"}]}]};
 
 // ============================================================
 // 题库数据 — 通过 <script> 标签动态载入 data/*.js（兼容 file://）
@@ -170,9 +175,9 @@ const _MANIFEST_DATA={"subjects":[{"id":"jz","name":"计算机组成原理","ico
 let QUESTION_BANK = {};   // { subjectId: { chapterId: { id,name,questions } } }
 let MANIFEST = null;      // 缓存的 manifest
 
-const TYPE_LABELS={danxuan:"单选题",panduan:"判断题",tiankong:"填空题",jianda:"简答题",jisuan:"计算题"};
-const TYPE_CLASSES={danxuan:"q-type-dx",panduan:"q-type-pd",tiankong:"q-type-tk",jianda:"q-type-jd",jisuan:"q-type-js"};
-const TYPE_ORDER=["danxuan","panduan","tiankong","jianda","jisuan"];
+const TYPE_LABELS={danxuan:"单选题",duoxuan:"多选题",panduan:"判断题",tiankong:"填空题",jianda:"简答题",jisuan:"计算题"};
+const TYPE_CLASSES={danxuan:"q-type-dx",duoxuan:"q-type-dm",panduan:"q-type-pd",tiankong:"q-type-tk",jianda:"q-type-jd",jisuan:"q-type-js"};
+const TYPE_ORDER=["danxuan","duoxuan","panduan","tiankong","jianda","jisuan"];
 const LETTERS="ABCDEFGH";
 
 // ============================================================
@@ -181,7 +186,7 @@ const LETTERS="ABCDEFGH";
 let state={
   subjectId:null,
   mode:"chapter",chapterId:null,currentIndex:0,answered:false,
-  selectedOption:null,wrongSet:new Set(),starredSet:new Set(),history:{},
+  selectedOption:null,selectedOptions:null,wrongSet:new Set(),starredSet:new Set(),history:{},
   typeFilter:null,_randomCache:null
 };
 
@@ -323,7 +328,7 @@ async function switchSubject(subjectId){
   const ct=document.getElementById("mainContent");
   ct.innerHTML='<div class="empty"><div class="ei">⏳</div><div class="et">切换科目中...</div></div>';
   state.subjectId=subjectId;
-  state.currentIndex=0;state.answered=false;state.selectedOption=null;state.typeFilter=null;
+  state.currentIndex=0;state.answered=false;state.selectedOption=null;state.selectedOptions=null;state.typeFilter=null;
   state.wrongSet=new Set();state.starredSet=new Set();state.history={};
   loadSubjectPersisted(subjectId);
   try{
@@ -433,6 +438,7 @@ function render(){
   setPageTitle(titles[state.mode]||"刷题");
 
   const isChoice=q.type==="danxuan"||q.type==="panduan";
+  const isMulti=q.type==="duoxuan";
   const isFill=q.type==="tiankong";
   const isOpen=q.type==="jianda"||q.type==="jisuan";
 
@@ -472,6 +478,58 @@ function render(){
     if(state.answered){
       const cr=state.selectedOption===q.answer;
       h+=`<div class="rb ${cr?'cr':'wr'}">${cr?'✅ 正确！':'❌ 错误，正确答案：'+q.answer}</div>`;
+    }
+  }
+
+  if(isMulti){
+    h+=`<div class="options">`;
+    q.options.forEach((opt,oi)=>{
+      const lt=LETTERS[oi];
+      let cls="opt";
+      if(state.answered){
+        const isCr=q.answer.includes(lt);
+        const isSel=state.selectedOptions&&state.selectedOptions.includes(lt);
+        if(state.selectedOptions){
+          // 提交模式：区分正确/错误/漏选
+          if(isCr&&isSel) cls+=" cr";
+          else if(isCr&&!isSel) cls+=" ms";
+          else if(!isCr&&isSel) cls+=" wr";
+          else cls+=" dis";
+        }else{
+          // 查看答案模式：正确答案绿色，其余禁用
+          if(isCr) cls+=" cr";
+          else cls+=" dis";
+        }
+      }else{
+        if(state.selectedOptions&&state.selectedOptions.includes(lt)) cls+=" sel";
+      }
+      h+=`<div class="${cls}" data-action="multipick" data-qid="${q.id}" data-opt="${lt}">`;
+      h+=`<span class="lt">${lt}</span><span class="tx">${opt.replace(/^[A-Z]\.\s*/,'')}</span>`;
+      if(!state.answered&&state.selectedOptions&&state.selectedOptions.includes(lt))
+        h+=`<span class="ck">✓</span>`;
+      h+=`</div>`;
+    });
+    h+=`</div>`;
+    if(!state.answered){
+      const hasSel=state.selectedOptions&&state.selectedOptions.length>0;
+      h+=`<div style="display:flex;gap:6px;margin-bottom:6px">`;
+      h+=`<button class="nav-btn pri" data-action="multisubmit" data-qid="${q.id}" style="flex:1;padding:8px 16px;font-size:12px" ${hasSel?'':'disabled'}>✅ 确认提交</button>`;
+      h+=`<button class="nav-btn" data-action="showans" data-qid="${q.id}" style="flex:1;padding:8px 16px;font-size:12px">📌 查看答案</button>`;
+      h+=`</div>`;
+    }
+    if(state.answered){
+      const hasSubmitted=state.selectedOptions&&state.selectedOptions.length>0;
+      if(hasSubmitted){
+        const sortedAns=[...q.answer].sort().join('');
+        const sortedSel=[...state.selectedOptions].sort().join('');
+        const cr=sortedAns===sortedSel;
+        h+=`<div class="rb ${cr?'cr':'wr'}">${cr?'✅ 全部正确！':'❌ 答案不完整或有误'}</div>`;
+      }
+      const correctTexts=q.answer.split('').map(l=>{
+        const idx=LETTERS.indexOf(l);
+        return q.options[idx]?q.options[idx].replace(/^[A-D]\.\s*/,''):l;
+      });
+      h+=`<div style="font-size:12px;color:var(--text-light);margin-top:6px">正确答案：${correctTexts.join('、')}</div>`;
     }
   }
 
@@ -548,6 +606,8 @@ document.getElementById("mainContent").addEventListener("click",function(e){
 
   if(action==="tf"){toggleTypeFilter(target.dataset.type);return}
   if(action==="pick"){if(state.answered)return;handlePick(qid,target.dataset.opt);}
+  else if(action==="multipick"){if(state.answered)return;handleMultiPick(qid,target.dataset.opt);}
+  else if(action==="multisubmit")handleMultiSubmit(qid);
   else if(action==="star")handleStar(qid);
   else if(action==="fillcheck")handleFillCheck(qid);
   else if(action==="showans")handleShowAns(qid);
@@ -556,7 +616,7 @@ document.getElementById("mainContent").addEventListener("click",function(e){
   else if(action==="randnext")nextRand();
 
   // 章节选择页的操作按钮
-  else if(action==="sw-starred"){state.mode="starred";state.currentIndex=0;state.answered=false;state.selectedOption=null;render();}
+  else if(action==="sw-starred"){state.mode="starred";state.currentIndex=0;state.answered=false;state.selectedOption=null;state.selectedOptions=null;render();}
   else if(action==="sw-subject"){if(MANIFEST)renderSubjectSelect();}
   else if(action==="sw-clear")showClearConfirm();
   else if(action==="sw-reset")showResetConfirm();
@@ -660,6 +720,29 @@ function handlePick(qId,opt){
   saveSubjectPersisted();render();
 }
 
+function handleMultiPick(qId,opt){
+  const q=findQ(qId);if(!q)return;
+  if(state.answered)return;
+  if(!state.selectedOptions) state.selectedOptions=[];
+  const idx=state.selectedOptions.indexOf(opt);
+  if(idx>=0) state.selectedOptions.splice(idx,1);
+  else state.selectedOptions.push(opt);
+  render();
+}
+
+function handleMultiSubmit(qId){
+  if(state.answered)return;
+  if(!state.selectedOptions||!state.selectedOptions.length)return;
+  const q=findQ(qId);if(!q)return;
+  state.answered=true;
+  const sortedAns=[...q.answer].sort().join('');
+  const sortedSel=[...state.selectedOptions].sort().join('');
+  const cr=sortedAns===sortedSel;
+  state.history[q.id]={correct:cr,count:(state.history[q.id]?.count||0)+1};
+  if(cr) state.wrongSet.delete(q.id); else state.wrongSet.add(q.id);
+  saveSubjectPersisted();render();
+}
+
 function handleStar(qId){
   if(state.starredSet.has(qId))state.starredSet.delete(qId);else state.starredSet.add(qId);
   saveSubjectPersisted();render();
@@ -681,23 +764,24 @@ function handleFillCheck(qId){
 
 function handleShowAns(qId){
   state.answered=true;
+  state.selectedOptions=null; // 查看答案模式：不显示正误判断，只展示参考答案
   render();
 }
 
 function go(d){
   const qs=getCurQ();const ni=state.currentIndex+d;
   if(ni<0||ni>=qs.length)return;
-  state.currentIndex=ni;state.answered=false;state.selectedOption=null;render();
+  state.currentIndex=ni;state.answered=false;state.selectedOption=null;state.selectedOptions=null;render();
 }
 
 function jumpTo(n){
-  state.currentIndex=n-1;state.answered=false;state.selectedOption=null;render();
+  state.currentIndex=n-1;state.answered=false;state.selectedOption=null;state.selectedOptions=null;render();
 }
 
 function nextRand(){
   const qs=getSubjectQ();if(!qs.length)return;
   state._randomCache=shuffle(qs);
-  state.currentIndex=0;state.answered=false;state.selectedOption=null;render();
+  state.currentIndex=0;state.answered=false;state.selectedOption=null;state.selectedOptions=null;render();
 }
 
 function toggleTypeFilter(type){
@@ -710,13 +794,13 @@ function toggleTypeFilter(type){
     else state.typeFilter=[...state.typeFilter,type];
     if(state.typeFilter.length===0||state.typeFilter.length===TYPE_ORDER.length) state.typeFilter=null;
   }
-  state.currentIndex=0;state.answered=false;state.selectedOption=null;
+  state.currentIndex=0;state.answered=false;state.selectedOption=null;state.selectedOptions=null;
   if(state.mode==="chapter"&&state.chapterId) render();
   else renderChSelect();
 }
 
 function switchCh(id){
-  state.chapterId=id;state.mode="chapter";state.currentIndex=0;state.answered=false;state.selectedOption=null;render();
+  state.chapterId=id;state.mode="chapter";state.currentIndex=0;state.answered=false;state.selectedOption=null;state.selectedOptions=null;render();
 }
 
 // ============================================================
@@ -728,7 +812,7 @@ document.getElementById("bottomNav").addEventListener("click",function(e){
   if(mode==="subject"){if(MANIFEST)renderSubjectSelect();return}
   if(mode==="chapter"){state.mode="chapter";renderChSelect();updateStatsAndNav();return}
   if(mode==="browse"){state.mode="browse";render();return}
-  state.mode=mode;state.currentIndex=0;state.answered=false;state.selectedOption=null;state._randomCache=null;render();
+  state.mode=mode;state.currentIndex=0;state.answered=false;state.selectedOption=null;state.selectedOptions=null;state._randomCache=null;render();
 });
 
 // ============================================================

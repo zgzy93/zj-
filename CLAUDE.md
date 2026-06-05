@@ -2,7 +2,7 @@
 
 ## 项目概要
 
-一个纯前端刷题 SPA，用于计算机组成原理备考。支持单选/判断/填空/简答/计算五种题型，可在手机端和 PC 端使用。
+一个纯前端刷题 SPA，用于计算机组成原理和 Hadoop 备考。支持单选/多选/判断/填空/简答/计算六种题型，可在手机端和 PC 端使用。
 
 **项目性质**：纯静态 HTML + JS + CSS，无后端、无构建工具。可直接 `file://` 打开或部署到 GitHub Pages。
 
@@ -18,7 +18,8 @@
 ├── CLAUDE.md               ← 本文件
 ├── CHANGELOG.md
 ├── data/
-│   ├── jz_ch1.js ~ jz_ch4.js  ← 题库数据文件
+│   ├── jz_ch1.js ~ jz_ch4.js  ← 计组题库数据文件
+│   ├── hd_ch1.js              ← Hadoop 题库数据文件（含多选）
 │   └── raw/                    ← 原始文本题库（不上传 GitHub）
 ├── extract_data.py          ← 从 raw/ 提取题库的脚本（本地工具）
 └── .gitignore
@@ -29,7 +30,7 @@
 | 文件 | 端 | 数据源 | 说明 |
 |------|-----|--------|------|
 | `index.html` | 手机 | data/*.js | GitHub Pages 发布版，多科目，主力维护 |
-| `quiz-mobilenew.html` | 手机 | data/*.js | index.html 副本，需手动同步更新 |
+| `quiz-mobilenew.html` | 手机 | data/*.js | index.html 副本（改 index → cp → 提交） |
 | `quiz-mobile.html` | 手机 | 内嵌在 HTML | 旧版已弃用 |
 | `quiz-pc.html` | PC | data/*.js | 大屏优化，独立维护 |
 
@@ -94,11 +95,12 @@ const _MANIFEST_DATA = {
 
 ## 题型系统
 
-五种题型，定义在 `TYPE_ORDER`、`TYPE_LABELS`、`TYPE_CLASSES` 中：
+六种题型，定义在 `TYPE_ORDER`、`TYPE_LABELS`、`TYPE_CLASSES` 中：
 
 | 类型 key | 显示名 | CSS 类 |
 |----------|--------|--------|
 | `danxuan` | 单选题 | `q-type-dx` |
+| `duoxuan` | 多选题 | `q-type-dm` |
 | `panduan` | 判断题 | `q-type-pd` |
 | `tiankong` | 填空题 | `q-type-tk` |
 | `jianda` | 简答题 | `q-type-jd` |
@@ -111,7 +113,7 @@ const _MANIFEST_DATA = {
   type: "danxuan",       // 对应 TYPE_ORDER
   question: "题干文本",
   options: ["A. 选项A", "B. 选项B", ...],  // 选择题才有
-  answer: "D"            // 选择题用字母，填空题用文本，简答/计算用多行文本
+  answer: "D"            // 单选用字母、多选用字母拼接(如"ABC")、填空用文本、简答/计算用多行文本
 }
 ```
 
@@ -119,26 +121,27 @@ const _MANIFEST_DATA = {
 
 ## 功能清单
 
-- [x] 五种题型刷题（单选/判断/填空/简答/计算）
+- [x] 六种题型刷题（单选/多选/判断/填空/简答/计算）
 - [x] 章节刷题、全部刷题、随机刷题
 - [x] 错题本、收藏（⭐）
 - [x] 题型筛选（按题型过滤题目）
 - [x] 题号快速跳转（输入数字回车）
 - [x] 触屏滑动切换题目（左滑下一题/右滑上一题）
+- [x] 多选题交互（选项切换、确认提交、正误/漏选反馈、查看答案）
 - [x] 答案即时反馈 + 参考答案展示
 - [x] 答题历史记录（localStorage）
-- [x] 多科目支持
+- [x] 多科目支持（计组 + Hadoop）
 - [x] 题库浏览页（统计总览）
-- [x] PC 版键盘快捷键（← → 翻题、1~4 选选项、Space 看答案等）
+- [x] PC 版键盘快捷键（← → 翻题、1~4 选选项/Space 看答案、Enter 提交、S 收藏、R 随机）
 
 ---
 
 ## 维护提示
 
 ### 添加题目
-1. 打开 `data/jz_chX.js`
+1. 打开 `data/jz_chX.js` 或 `data/hd_ch1.js`
 2. 在对应章节的 `questions` 数组中添加新题目对象
-3. 确保 `id` 不重复（约定：`chX_数字`、`chX_f数字`（填空）、`chX_s数字`（简答）、`chX_c数字`（计算））
+3. 确保 `id` 不重复（约定：`chX_数字`、`chX_f数字`（填空）、`chX_s数字`（简答）、`chX_c数字`（计算）、`hd_m数字`（多选））
 
 ### 添加新章节
 1. 新建 `data/jz_ch5.js`，格式参考已有文件

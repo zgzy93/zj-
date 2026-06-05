@@ -1,5 +1,30 @@
 # 更新日志
 
+## v2.0 — 2026-06-05
+
+### ✨ 新增功能
+- **新科目 Hadoop**：新增 Hadoop 科目，含 50 道单选、20 道多选、10 道填空，共 80 题
+- **新题型 多选题**：支持多选题（`duoxuan`）的完整适配——切换选择、确认提交、正误反馈
+- **多选题 PC 快捷键**：`1~4` 切换选中的选项、`Enter` 提交答案
+
+### 📁 文件调整
+- `data/hd_ch1.js`：新增 Hadoop 题库数据文件
+- `data/extract_hadoop.py`：Hadoop 题库提取脚本（已加入 `.gitignore`）
+- 所有三端（`index.html` / `quiz-pc.html` / `quiz-mobilenew.html`）同步更新
+- `CLAUDE.md`：题型表、文件结构等文档同步更新
+
+### 🔧 技术细节
+- 多选题状态通过 `state.selectedOptions`（数组）管理，支持选项切换/取消
+- 答案比对使用字母排序后全等比较（忽略顺序）
+- 多选题结果展示三种视觉状态：✅正确选中（绿色）、❌错误选中（红色）、⚠️漏选（琥珀色虚线）
+- 所有状态重置点新增 `selectedOptions=null` 清理
+
+### 🐛 Bug 修复
+- **PC 端无法点击**：修复 `switchCh` 函数声明被截断导致 JS 解析失败的严重 bug
+- **多选题缺"查看答案"按钮**：新增 `📌 查看答案` 按钮，支持直接看答案
+- **查看答案后误判"答案有误"**：`handleShowAns` 清空 `selectedOptions`，区分提交/查看模式
+- **漏选样式与 PC hover 冲突**：`.opt.ms` 补充 `cursor:default`，PC 版增加 `.opt.ms:hover` 覆盖
+
 ## v1.4 — 2026-06-04
 
 ### ✨ 新增功能
