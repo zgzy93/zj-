@@ -18,7 +18,7 @@
 ├── CLAUDE.md               ← 本文件
 ├── CHANGELOG.md
 ├── data/
-│   ├── jz_ch1.js ~ jz_ch4.js  ← 计组题库数据文件
+│   ├── jz_ch1.js ~ jz_ch5.js  ← 计组题库数据文件
 │   ├── hd_ch1.js              ← Hadoop 题库数据文件（含多选）
 │   └── raw/                    ← 原始文本题库（不上传 GitHub）
 ├── extract_data.py          ← 从 raw/ 提取题库的脚本（本地工具）
@@ -144,8 +144,8 @@ const _MANIFEST_DATA = {
 3. 确保 `id` 不重复（约定：`chX_数字`、`chX_f数字`（填空）、`chX_s数字`（简答）、`chX_c数字`（计算）、`hd_m数字`（多选））
 
 ### 添加新章节
-1. 新建 `data/jz_ch5.js`，格式参考已有文件
-2. 修改 `index.html` 和 `quiz-pc.html` 中的 `_MANIFEST_DATA`，在对应科目的 `chapters` 中添加条目
+1. 新建 `data/jz_ch6.js`，格式参考已有文件
+2. 修改 `index.html`、`quiz-mobilenew.html` 和 `quiz-pc.html` 中的 `_MANIFEST_DATA`，在对应科目的 `chapters` 中添加条目
 
 ### 添加新科目
 1. 新建 `data/<新id>_ch1.js` 等文件
