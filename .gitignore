@@ -8,3 +8,6 @@ parse_review.py
 
 # 聊天记录（本地备份）
 聊天记录_*.md
+
+# Windows 快捷方式
+*.lnk
